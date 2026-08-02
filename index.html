@@ -1,0 +1,121 @@
+<!doctype html>
+<html lang="ru">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+  <meta name="theme-color" content="#ff4fa3">
+  <meta name="description" content="PinkSasha — розовый мессенджер">
+  <title>PinkSasha</title>
+  <link rel="manifest" href="./manifest.webmanifest">
+  <link rel="stylesheet" href="./styles.css">
+</head>
+<body>
+  <div id="toast" class="toast" role="status" aria-live="polite"></div>
+
+  <main class="page">
+    <section id="authScreen" class="auth-shell">
+      <div class="auth-card">
+        <div class="brand-mark">💗</div>
+        <h1>PinkSasha</h1>
+        <p class="muted center">Твой уютный розовый мессенджер</p>
+
+        <div class="tabs">
+          <button id="loginTab" class="tab active" type="button">Войти</button>
+          <button id="registerTab" class="tab" type="button">Регистрация</button>
+        </div>
+
+        <form id="authForm" novalidate>
+          <label class="field">
+            <span>Имя</span>
+            <input id="authUsername" minlength="3" maxlength="30" autocomplete="username"
+                   placeholder="Например: Саша" required>
+          </label>
+          <label class="field">
+            <span>Пароль</span>
+            <input id="authPassword" type="password" minlength="6" maxlength="100"
+                   autocomplete="current-password" placeholder="Минимум 6 символов" required>
+          </label>
+          <button id="authSubmit" class="primary large" type="submit">Войти</button>
+        </form>
+
+        <p id="authStatus" class="status" aria-live="polite"></p>
+      </div>
+    </section>
+
+    <section id="appScreen" class="app-shell hidden">
+      <aside class="sidebar">
+        <header class="sidebar-header">
+          <div>
+            <div class="eyebrow">PinkSasha</div>
+            <h2 id="currentUsername">Пользователь</h2>
+          </div>
+          <button id="logoutBtn" class="icon-btn" type="button" title="Выйти">↪</button>
+        </header>
+
+        <div class="sidebar-actions">
+          <button id="newChatBtn" class="primary" type="button">＋ Новый чат</button>
+          <button id="refreshBtn" class="secondary" type="button">Обновить</button>
+        </div>
+
+        <div class="section-title">Мои чаты</div>
+        <div id="conversationList" class="conversation-list">
+          <div class="empty-small">Чатов пока нет</div>
+        </div>
+      </aside>
+
+      <section class="chat-panel">
+        <div id="emptyChat" class="empty-chat">
+          <div class="empty-heart">💗</div>
+          <h2>Выбери чат</h2>
+          <p>Или создай новый чат с другим пользователем.</p>
+        </div>
+
+        <div id="activeChat" class="active-chat hidden">
+          <header class="chat-header">
+            <button id="backBtn" class="icon-btn mobile-only" type="button">←</button>
+            <div class="avatar" id="chatAvatar">P</div>
+            <div>
+              <h3 id="chatTitle">Чат</h3>
+              <p id="chatSubtitle">личная переписка</p>
+            </div>
+          </header>
+
+          <div id="messageList" class="messages"></div>
+
+          <form id="messageForm" class="composer">
+            <textarea id="messageInput" rows="1" maxlength="2000"
+                      placeholder="Сообщение…" required></textarea>
+            <button class="send-btn" type="submit" title="Отправить">➤</button>
+          </form>
+        </div>
+      </section>
+    </section>
+  </main>
+
+  <dialog id="newChatDialog" class="dialog">
+    <form method="dialog" class="dialog-card">
+      <div class="dialog-head">
+        <div>
+          <div class="eyebrow">Новый чат</div>
+          <h3>Выбери пользователя</h3>
+        </div>
+        <button class="icon-btn" value="cancel" type="submit">✕</button>
+      </div>
+      <input id="userSearch" class="search" placeholder="Поиск по имени">
+      <div id="userList" class="user-list"></div>
+    </form>
+  </dialog>
+
+  <dialog id="messageMenuDialog" class="dialog small-dialog">
+    <div class="dialog-card">
+      <h3>Сообщение</h3>
+      <button id="editMessageBtn" class="secondary full" type="button">Редактировать</button>
+      <button id="deleteMessageBtn" class="danger full" type="button">Удалить</button>
+      <button id="closeMessageMenuBtn" class="ghost full" type="button">Закрыть</button>
+    </div>
+  </dialog>
+
+  <script src="./config.js"></script>
+  <script src="./app.js"></script>
+</body>
+</html>

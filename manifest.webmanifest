@@ -1,0 +1,10 @@
+{
+  "name": "PinkSasha",
+  "short_name": "PinkSasha",
+  "description": "Розовый мессенджер",
+  "start_url": "./",
+  "scope": "./",
+  "display": "standalone",
+  "background_color": "#fff2f8",
+  "theme_color": "#ff4fa3"
+}
