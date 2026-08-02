@@ -1,512 +1,71 @@
 (() => {
-  "use strict";
-
-  const cfg = window.PINKSASHA_CONFIG;
-  const TOKEN_KEY = "pinksasha_session_token";
-  const THEME_KEY = "pinksasha_theme";
-  const $ = (id) => document.getElementById(id);
-  const EMOJIS = ["😀","😂","🥰","😍","😘","😊","😉","😭","🥺","😎","🤔","😡","❤️","💗","💕","💖","✨","🔥","👍","🙏","🎉","🌸","💅","🫶"];
-
-  const state = {
-    mode: "login",
-    token: localStorage.getItem(TOKEN_KEY) || "",
-    user: null,
-    users: [],
-    conversations: [],
-    activeConversation: null,
-    messages: [],
-    selectedMessage: null,
-    selectedPhotoData: "",
-    selectedAvatarData: "",
-    pollTimer: null
-  };
-
-  const els = {
-    toast: $("toast"), authScreen: $("authScreen"), appScreen: $("appScreen"),
-    loginTab: $("loginTab"), registerTab: $("registerTab"), authForm: $("authForm"),
-    authUsername: $("authUsername"), authPassword: $("authPassword"), authSubmit: $("authSubmit"),
-    authStatus: $("authStatus"), profileBtn: $("profileBtn"), currentAvatar: $("currentAvatar"),
-    currentUsername: $("currentUsername"), logoutBtn: $("logoutBtn"), newChatBtn: $("newChatBtn"),
-    refreshBtn: $("refreshBtn"), conversationList: $("conversationList"), emptyChat: $("emptyChat"),
-    activeChat: $("activeChat"), backBtn: $("backBtn"), chatAvatar: $("chatAvatar"),
-    chatTitle: $("chatTitle"), chatSubtitle: $("chatSubtitle"), messageList: $("messageList"),
-    mediaPreview: $("mediaPreview"), mediaPreviewImage: $("mediaPreviewImage"),
-    removeMediaBtn: $("removeMediaBtn"), emojiPanel: $("emojiPanel"), messageForm: $("messageForm"),
-    messageInput: $("messageInput"), photoBtn: $("photoBtn"), emojiBtn: $("emojiBtn"),
-    photoInput: $("photoInput"), newChatDialog: $("newChatDialog"), userSearch: $("userSearch"),
-    userList: $("userList"), profileDialog: $("profileDialog"), closeProfileBtn: $("closeProfileBtn"),
-    profileAvatarPreview: $("profileAvatarPreview"), chooseAvatarBtn: $("chooseAvatarBtn"),
-    avatarInput: $("avatarInput"), profileUsername: $("profileUsername"), profileBio: $("profileBio"),
-    profileTheme: $("profileTheme"), saveProfileBtn: $("saveProfileBtn"),
-    messageMenuDialog: $("messageMenuDialog"), editMessageBtn: $("editMessageBtn"),
-    deleteMessageBtn: $("deleteMessageBtn"), closeMessageMenuBtn: $("closeMessageMenuBtn"),
-    editMessageDialog: $("editMessageDialog"), editMessageInput: $("editMessageInput"),
-    saveEditedMessageBtn: $("saveEditedMessageBtn"), cancelEditMessageBtn: $("cancelEditMessageBtn"),
-    imageDialog: $("imageDialog"), imageDialogPhoto: $("imageDialogPhoto"),
-    closeImageDialogBtn: $("closeImageDialogBtn")
-  };
-
-  function showToast(message) {
-    els.toast.textContent = message;
-    els.toast.classList.add("show");
-    clearTimeout(showToast.timer);
-    showToast.timer = setTimeout(() => els.toast.classList.remove("show"), 3200);
-  }
-
-  function setAuthStatus(message, isError = false) {
-    els.authStatus.textContent = message || "";
-    els.authStatus.style.color = isError ? "#b42318" : "var(--accent)";
-  }
-
-  async function api(action, payload = {}) {
-    const response = await fetch(cfg.apiUrl, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        "apikey": cfg.publishableKey,
-        "Authorization": `Bearer ${cfg.publishableKey}`
-      },
-      body: JSON.stringify({ action, ...payload })
-    });
-    const raw = await response.text();
-    let data;
-    try { data = raw ? JSON.parse(raw) : {}; }
-    catch { throw new Error(`Сервер вернул непонятный ответ (${response.status}).`); }
-    if (!response.ok || data.error) throw new Error(data.error || `Ошибка сервера (${response.status}).`);
-    return data;
-  }
-
-  function cleanName(value) { return value.trim().replace(/\s+/g, " "); }
-  function formatTime(value) {
-    if (!value) return "";
-    return new Intl.DateTimeFormat("ru", { hour: "2-digit", minute: "2-digit" }).format(new Date(value));
-  }
-  function initial(name) { return (name || "P").trim().charAt(0).toUpperCase(); }
-  function escapeHtml(value) {
-    return String(value ?? "").replaceAll("&","&amp;").replaceAll("<","&lt;")
-      .replaceAll(">","&gt;").replaceAll('"',"&quot;").replaceAll("'","&#039;");
-  }
-  function avatarContent(user) {
-    return user?.avatar_url
-      ? `<img src="${escapeHtml(user.avatar_url)}" alt="">`
-      : escapeHtml(initial(user?.username));
-  }
-  function setAvatar(element, user) { element.innerHTML = avatarContent(user); }
-  function applyTheme(theme) {
-    const allowed = ["pink","purple","peach","dark"];
-    const next = allowed.includes(theme) ? theme : "pink";
-    document.documentElement.dataset.theme = next;
-    localStorage.setItem(THEME_KEY, next);
-  }
-
-  function switchAuthMode(mode) {
-    state.mode = mode;
-    els.loginTab.classList.toggle("active", mode === "login");
-    els.registerTab.classList.toggle("active", mode === "register");
-    els.authSubmit.textContent = mode === "login" ? "Войти" : "Создать аккаунт";
-    els.authPassword.autocomplete = mode === "login" ? "current-password" : "new-password";
-    setAuthStatus("");
-  }
-
-  function showAuth() {
-    clearInterval(state.pollTimer);
-    state.pollTimer = null;
-    state.user = null;
-    state.activeConversation = null;
-    els.appScreen.classList.add("hidden");
-    els.authScreen.classList.remove("hidden");
-  }
-
-  function updateCurrentProfileUI() {
-    if (!state.user) return;
-    els.currentUsername.textContent = state.user.username;
-    setAvatar(els.currentAvatar, state.user);
-    applyTheme(state.user.theme || localStorage.getItem(THEME_KEY) || "pink");
-  }
-
-  async function showApp(user) {
-    state.user = user;
-    updateCurrentProfileUI();
-    els.authScreen.classList.add("hidden");
-    els.appScreen.classList.remove("hidden");
-    await refreshAll();
-    clearInterval(state.pollTimer);
-    state.pollTimer = setInterval(async () => {
-      try {
-        await loadConversations();
-        if (state.activeConversation) await loadMessages(false);
-      } catch (error) { console.warn(error); }
-    }, cfg.pollIntervalMs);
-  }
-
-  async function refreshAll() {
-    await Promise.all([loadUsers(), loadConversations()]);
-    if (state.activeConversation) await loadMessages();
-  }
-
-  async function loadUsers() {
-    if (!state.token) return;
-    const data = await api("list_users", { token: state.token });
-    state.users = data.users || [];
-    renderUsers();
-  }
-
-  async function loadConversations() {
-    if (!state.token) return;
-    const data = await api("list_conversations", { token: state.token });
-    state.conversations = data.conversations || [];
-    if (state.activeConversation) {
-      const updated = state.conversations.find((item) => item.id === state.activeConversation.id);
-      if (updated) {
-        state.activeConversation = updated;
-        els.chatTitle.textContent = updated.other_user.username;
-        els.chatSubtitle.textContent = updated.other_user.bio || "личная переписка";
-        setAvatar(els.chatAvatar, updated.other_user);
-      }
-    }
-    renderConversations();
-  }
-
-  function renderConversations() {
-    if (!state.conversations.length) {
-      els.conversationList.innerHTML = '<div class="empty-small">Чатов пока нет</div>';
-      return;
-    }
-    els.conversationList.innerHTML = state.conversations.map((conversation) => {
-      const active = state.activeConversation?.id === conversation.id ? " active" : "";
-      const last = conversation.last_message;
-      const preview = last?.deleted_at ? "Сообщение удалено"
-        : last?.image_url ? (last.body ? `📷 ${last.body}` : "📷 Фотография")
-        : (last?.body || "Начните переписку");
-      return `
-        <button class="conversation${active}" type="button" data-conversation-id="${conversation.id}">
-          <div class="avatar">${avatarContent(conversation.other_user)}</div>
-          <div class="conversation-main">
-            <div class="conversation-top">
-              <span class="conversation-name">${escapeHtml(conversation.other_user.username)}</span>
-              <span class="conversation-time">${formatTime(last?.created_at)}</span>
-            </div>
-            <div class="conversation-preview">${escapeHtml(preview)}</div>
-          </div>
-        </button>`;
-    }).join("");
-  }
-
-  function renderUsers() {
-    const query = els.userSearch.value.trim().toLocaleLowerCase("ru");
-    const filtered = state.users.filter((user) =>
-      user.id !== state.user?.id && user.username.toLocaleLowerCase("ru").includes(query)
-    );
-    els.userList.innerHTML = filtered.length ? filtered.map((user) => `
-      <div class="user-card">
-        <div class="avatar">${avatarContent(user)}</div>
-        <div><strong>${escapeHtml(user.username)}</strong><div class="conversation-preview">${escapeHtml(user.bio || "")}</div></div>
-        <button type="button" data-user-id="${user.id}">Написать</button>
-      </div>`).join("") : '<div class="empty-small">Пользователи не найдены</div>';
-  }
-
-  async function openConversation(conversationId) {
-    const conversation = state.conversations.find((item) => item.id === conversationId);
-    if (!conversation) return;
-    state.activeConversation = conversation;
-    els.chatTitle.textContent = conversation.other_user.username;
-    els.chatSubtitle.textContent = conversation.other_user.bio || "личная переписка";
-    setAvatar(els.chatAvatar, conversation.other_user);
-    els.emptyChat.classList.add("hidden");
-    els.activeChat.classList.remove("hidden");
-    els.appScreen.classList.add("chat-open");
-    renderConversations();
-    await loadMessages();
-    els.messageInput.focus();
-  }
-
-  async function loadMessages(scroll = true) {
-    if (!state.activeConversation) return;
-    const data = await api("get_messages", {
-      token: state.token,
-      conversation_id: state.activeConversation.id
-    });
-    const next = data.messages || [];
-    const changed = JSON.stringify(next) !== JSON.stringify(state.messages);
-    state.messages = next;
-    if (changed) renderMessages(scroll);
-  }
-
-  function renderMessages(scroll = true) {
-    els.messageList.innerHTML = state.messages.length ? state.messages.map((message) => {
-      const mine = message.sender_id === state.user.id;
-      const deleted = Boolean(message.deleted_at);
-      const body = deleted ? "Сообщение удалено" : (message.body || "");
-      const image = !deleted && message.image_url
-        ? `<img class="bubble-photo" src="${escapeHtml(message.image_url)}" data-full-image="${escapeHtml(message.image_url)}" alt="Фотография">`
-        : "";
-      const menu = mine && !deleted
-        ? `<button class="message-menu-button" type="button" data-message-menu="${message.id}" aria-label="Меню сообщения">⋯</button>`
-        : "";
-      return `
-        <div class="bubble-row${mine ? " mine" : ""}">
-          <div class="bubble${deleted ? " deleted" : ""}${image ? " has-image" : ""}"
-               data-message-id="${message.id}" data-mine="${mine ? "1" : "0"}">
-            ${menu}${image}<span class="bubble-text">${escapeHtml(body)}</span>
-            <span class="bubble-meta">
-              ${message.edited_at && !deleted ? '<span class="edited-mark" title="Изменено">✎</span>' : ""}
-              <span>${formatTime(message.created_at)}</span>
-            </span>
-          </div>
-        </div>`;
-    }).join("") : '<div class="empty-small">Напиши первое сообщение 💗</div>';
-    if (scroll) els.messageList.scrollTop = els.messageList.scrollHeight;
-  }
-
-  function clearSelectedPhoto() {
-    state.selectedPhotoData = "";
-    els.photoInput.value = "";
-    els.mediaPreview.classList.add("hidden");
-    els.mediaPreviewImage.removeAttribute("src");
-  }
-
-  async function compressImage(file, maxDimension, quality = 0.82) {
-    if (!file.type.startsWith("image/")) throw new Error("Выбери изображение.");
-    if (file.size > 12 * 1024 * 1024) throw new Error("Файл слишком большой. Максимум 12 МБ.");
-    const objectUrl = URL.createObjectURL(file);
-    try {
-      const image = new Image();
-      image.src = objectUrl;
-      await image.decode();
-      let { width, height } = image;
-      const scale = Math.min(1, maxDimension / Math.max(width, height));
-      width = Math.max(1, Math.round(width * scale));
-      height = Math.max(1, Math.round(height * scale));
-      const canvas = document.createElement("canvas");
-      canvas.width = width;
-      canvas.height = height;
-      canvas.getContext("2d").drawImage(image, 0, 0, width, height);
-      return canvas.toDataURL("image/jpeg", quality);
-    } finally { URL.revokeObjectURL(objectUrl); }
-  }
-
-  function openProfile() {
-    state.selectedAvatarData = "";
-    els.profileUsername.value = state.user.username;
-    els.profileBio.value = state.user.bio || "";
-    els.profileTheme.value = state.user.theme || "pink";
-    setAvatar(els.profileAvatarPreview, state.user);
-    els.profileDialog.showModal();
-  }
-
-  els.loginTab.addEventListener("click", () => switchAuthMode("login"));
-  els.registerTab.addEventListener("click", () => switchAuthMode("register"));
-
-  els.authForm.addEventListener("submit", async (event) => {
-    event.preventDefault();
-    const username = cleanName(els.authUsername.value);
-    const password = els.authPassword.value;
-    if (username.length < 3) return setAuthStatus("Имя должно содержать минимум 3 символа.", true);
-    if (password.length < 6) return setAuthStatus("Пароль должен содержать минимум 6 символов.", true);
-    els.authSubmit.disabled = true;
-    setAuthStatus("Подключаемся…");
-    try {
-      const data = await api(state.mode, { username, password });
-      state.token = data.token;
-      localStorage.setItem(TOKEN_KEY, state.token);
-      els.authPassword.value = "";
-      setAuthStatus("");
-      await showApp(data.user);
-    } catch (error) { setAuthStatus(error.message, true); }
-    finally { els.authSubmit.disabled = false; }
-  });
-
-  els.logoutBtn.addEventListener("click", async () => {
-    try { if (state.token) await api("logout", { token: state.token }); } catch {}
-    localStorage.removeItem(TOKEN_KEY);
-    state.token = "";
-    showAuth();
-  });
-
-  els.profileBtn.addEventListener("click", openProfile);
-  els.closeProfileBtn.addEventListener("click", () => els.profileDialog.close());
-  els.chooseAvatarBtn.addEventListener("click", () => els.avatarInput.click());
-  els.avatarInput.addEventListener("change", async () => {
-    const file = els.avatarInput.files?.[0];
-    if (!file) return;
-    try {
-      state.selectedAvatarData = await compressImage(file, 700, 0.84);
-      els.profileAvatarPreview.innerHTML = `<img src="${state.selectedAvatarData}" alt="">`;
-    } catch (error) { showToast(error.message); }
-  });
-  els.profileTheme.addEventListener("change", () => applyTheme(els.profileTheme.value));
-  els.saveProfileBtn.addEventListener("click", async () => {
-    const username = cleanName(els.profileUsername.value);
-    if (username.length < 3) return showToast("Имя должно содержать минимум 3 символа.");
-    els.saveProfileBtn.disabled = true;
-    try {
-      const data = await api("update_profile", {
-        token: state.token,
-        username,
-        bio: els.profileBio.value.trim(),
-        theme: els.profileTheme.value,
-        avatar_data_url: state.selectedAvatarData || undefined
-      });
-      state.user = data.user;
-      updateCurrentProfileUI();
-      els.profileDialog.close();
-      await refreshAll();
-      showToast("Профиль сохранён");
-    } catch (error) { showToast(error.message); }
-    finally { els.saveProfileBtn.disabled = false; }
-  });
-
-  els.newChatBtn.addEventListener("click", async () => {
-    try { await loadUsers(); els.newChatDialog.showModal(); els.userSearch.focus(); }
-    catch (error) { showToast(error.message); }
-  });
-  els.refreshBtn.addEventListener("click", async () => {
-    try { await refreshAll(); showToast("Обновлено"); } catch (error) { showToast(error.message); }
-  });
-  els.userSearch.addEventListener("input", renderUsers);
-  els.userList.addEventListener("click", async (event) => {
-    const button = event.target.closest("[data-user-id]");
-    if (!button) return;
-    button.disabled = true;
-    try {
-      const data = await api("start_chat", { token: state.token, target_user_id: button.dataset.userId });
-      els.newChatDialog.close();
-      await loadConversations();
-      await openConversation(data.conversation_id);
-    } catch (error) { showToast(error.message); }
-    finally { button.disabled = false; }
-  });
-  els.conversationList.addEventListener("click", (event) => {
-    const button = event.target.closest("[data-conversation-id]");
-    if (button) openConversation(button.dataset.conversationId).catch((error) => showToast(error.message));
-  });
-  els.backBtn.addEventListener("click", () => els.appScreen.classList.remove("chat-open"));
-
-  els.emojiPanel.innerHTML = EMOJIS.map((emoji) => `<button type="button" data-emoji="${emoji}">${emoji}</button>`).join("");
-  els.emojiBtn.addEventListener("click", () => els.emojiPanel.classList.toggle("hidden"));
-  els.emojiPanel.addEventListener("click", (event) => {
-    const button = event.target.closest("[data-emoji]");
-    if (!button) return;
-    const start = els.messageInput.selectionStart;
-    const end = els.messageInput.selectionEnd;
-    els.messageInput.setRangeText(button.dataset.emoji, start, end, "end");
-    els.messageInput.focus();
-  });
-  els.photoBtn.addEventListener("click", () => els.photoInput.click());
-  els.photoInput.addEventListener("change", async () => {
-    const file = els.photoInput.files?.[0];
-    if (!file) return;
-    try {
-      showToast("Готовим фотографию…");
-      state.selectedPhotoData = await compressImage(file, 1400, 0.82);
-      els.mediaPreviewImage.src = state.selectedPhotoData;
-      els.mediaPreview.classList.remove("hidden");
-    } catch (error) { clearSelectedPhoto(); showToast(error.message); }
-  });
-  els.removeMediaBtn.addEventListener("click", clearSelectedPhoto);
-
-  els.messageForm.addEventListener("submit", async (event) => {
-    event.preventDefault();
-    const body = els.messageInput.value.trim();
-    if ((!body && !state.selectedPhotoData) || !state.activeConversation) return;
-    const photo = state.selectedPhotoData;
-    els.messageInput.value = "";
-    clearSelectedPhoto();
-    try {
-      await api("send_message", {
-        token: state.token,
-        conversation_id: state.activeConversation.id,
-        body,
-        image_data_url: photo || undefined
-      });
-      await Promise.all([loadMessages(), loadConversations()]);
-    } catch (error) {
-      els.messageInput.value = body;
-      state.selectedPhotoData = photo;
-      if (photo) { els.mediaPreviewImage.src = photo; els.mediaPreview.classList.remove("hidden"); }
-      showToast(error.message);
-    }
-  });
-  els.messageInput.addEventListener("keydown", (event) => {
-    if (event.key === "Enter" && !event.shiftKey) {
-      event.preventDefault();
-      els.messageForm.requestSubmit();
-    }
-  });
-
-  function selectMessage(messageId) {
-    const message = state.messages.find((item) => item.id === messageId);
-    if (!message || message.sender_id !== state.user.id || message.deleted_at) return;
-    state.selectedMessage = message;
-    els.messageMenuDialog.showModal();
-  }
-  els.messageList.addEventListener("click", (event) => {
-    const menuButton = event.target.closest("[data-message-menu]");
-    if (menuButton) { event.stopPropagation(); selectMessage(menuButton.dataset.messageMenu); return; }
-    const image = event.target.closest("[data-full-image]");
-    if (image) {
-      els.imageDialogPhoto.src = image.dataset.fullImage;
-      els.imageDialog.showModal();
-    }
-  });
-  els.messageList.addEventListener("contextmenu", (event) => {
-    const bubble = event.target.closest("[data-message-id]");
-    if (!bubble || bubble.dataset.mine !== "1") return;
-    event.preventDefault();
-    selectMessage(bubble.dataset.messageId);
-  });
-
-  els.editMessageBtn.addEventListener("click", () => {
-    if (!state.selectedMessage) return;
-    els.messageMenuDialog.close();
-    els.editMessageInput.value = state.selectedMessage.body || "";
-    els.editMessageDialog.showModal();
-    els.editMessageInput.focus();
-  });
-  els.saveEditedMessageBtn.addEventListener("click", async () => {
-    if (!state.selectedMessage) return;
-    const body = els.editMessageInput.value.trim();
-    if (!body && !state.selectedMessage.image_url) return showToast("Сообщение не может быть пустым.");
-    try {
-      await api("edit_message", { token: state.token, message_id: state.selectedMessage.id, body });
-      els.editMessageDialog.close();
-      await Promise.all([loadMessages(), loadConversations()]);
-      showToast("Сообщение изменено");
-    } catch (error) { showToast(error.message); }
-  });
-  els.cancelEditMessageBtn.addEventListener("click", () => els.editMessageDialog.close());
-  els.deleteMessageBtn.addEventListener("click", async () => {
-    if (!state.selectedMessage || !confirm("Удалить сообщение?")) return;
-    try {
-      await api("delete_message", { token: state.token, message_id: state.selectedMessage.id });
-      els.messageMenuDialog.close();
-      await Promise.all([loadMessages(), loadConversations()]);
-      showToast("Сообщение удалено");
-    } catch (error) { showToast(error.message); }
-  });
-  els.closeMessageMenuBtn.addEventListener("click", () => els.messageMenuDialog.close());
-  els.closeImageDialogBtn.addEventListener("click", () => els.imageDialog.close());
-  els.imageDialog.addEventListener("click", (event) => {
-    if (event.target === els.imageDialog) els.imageDialog.close();
-  });
-
-  async function boot() {
-    applyTheme(localStorage.getItem(THEME_KEY) || "pink");
-    if (!cfg?.apiUrl || !cfg?.publishableKey) return setAuthStatus("Не заполнен config.js.", true);
-    if (!state.token) return showAuth();
-    setAuthStatus("Проверяем сессию…");
-    try {
-      const data = await api("session", { token: state.token });
-      await showApp(data.user);
-    } catch {
-      localStorage.removeItem(TOKEN_KEY);
-      state.token = "";
-      showAuth();
-    }
-  }
-
-  if ("serviceWorker" in navigator) {
-    window.addEventListener("load", () => navigator.serviceWorker.register("./sw.js").catch(console.warn));
-  }
-  boot();
+"use strict";
+const cfg=window.PINKSASHA_CONFIG,TOKEN_KEY="pinksasha_session_token",THEME_KEY="pinksasha_theme",$=id=>document.getElementById(id);
+const EMOJIS=["😀","😂","🥰","😍","😘","😊","😉","😭","🥺","😎","🤔","😡","❤️","💗","💕","💖","✨","🔥","👍","🙏","🎉","🌸","💅","🫶"];
+const state={mode:"login",token:localStorage.getItem(TOKEN_KEY)||"",user:null,users:[],conversations:[],activeConversation:null,messages:[],stories:[],storyIndex:0,selectedMessage:null,selectedPhotoData:"",selectedAvatarData:"",selectedStoryData:"",pollTimer:null,storyTimer:null};
+const e={toast:$("toast"),authScreen:$("authScreen"),appScreen:$("appScreen"),loginTab:$("loginTab"),registerTab:$("registerTab"),authForm:$("authForm"),authUsername:$("authUsername"),authPassword:$("authPassword"),authSubmit:$("authSubmit"),authStatus:$("authStatus"),profileBtn:$("profileBtn"),currentAvatar:$("currentAvatar"),currentUsername:$("currentUsername"),logoutBtn:$("logoutBtn"),storyList:$("storyList"),addStoryBtn:$("addStoryBtn"),newChatBtn:$("newChatBtn"),refreshBtn:$("refreshBtn"),conversationList:$("conversationList"),emptyChat:$("emptyChat"),activeChat:$("activeChat"),backBtn:$("backBtn"),chatAvatar:$("chatAvatar"),chatTitle:$("chatTitle"),chatSubtitle:$("chatSubtitle"),messageList:$("messageList"),mediaPreview:$("mediaPreview"),mediaPreviewImage:$("mediaPreviewImage"),removeMediaBtn:$("removeMediaBtn"),emojiPanel:$("emojiPanel"),messageForm:$("messageForm"),messageInput:$("messageInput"),photoBtn:$("photoBtn"),emojiBtn:$("emojiBtn"),photoInput:$("photoInput"),newChatDialog:$("newChatDialog"),userSearch:$("userSearch"),userList:$("userList"),profileDialog:$("profileDialog"),closeProfileBtn:$("closeProfileBtn"),profileAvatarPreview:$("profileAvatarPreview"),chooseAvatarBtn:$("chooseAvatarBtn"),avatarInput:$("avatarInput"),profileUsername:$("profileUsername"),profileBio:$("profileBio"),profileTheme:$("profileTheme"),saveProfileBtn:$("saveProfileBtn"),notificationBtn:$("notificationBtn"),notificationStatus:$("notificationStatus"),storyCreateDialog:$("storyCreateDialog"),closeStoryCreateBtn:$("closeStoryCreateBtn"),chooseStoryPhotoBtn:$("chooseStoryPhotoBtn"),storyPhotoInput:$("storyPhotoInput"),storyCreatePreview:$("storyCreatePreview"),storyCreatePlaceholder:$("storyCreatePlaceholder"),storyCaption:$("storyCaption"),publishStoryBtn:$("publishStoryBtn"),storyViewerDialog:$("storyViewerDialog"),storyProgressBar:$("storyProgressBar"),storyViewerAvatar:$("storyViewerAvatar"),storyViewerName:$("storyViewerName"),storyViewerTime:$("storyViewerTime"),storyViewerImage:$("storyViewerImage"),storyViewerCaption:$("storyViewerCaption"),storyPrevBtn:$("storyPrevBtn"),storyNextBtn:$("storyNextBtn"),closeStoryViewerBtn:$("closeStoryViewerBtn"),deleteStoryBtn:$("deleteStoryBtn"),storyViewsBtn:$("storyViewsBtn"),storyViewersDialog:$("storyViewersDialog"),storyViewersList:$("storyViewersList"),closeStoryViewersBtn:$("closeStoryViewersBtn"),messageMenuDialog:$("messageMenuDialog"),editMessageBtn:$("editMessageBtn"),deleteMessageBtn:$("deleteMessageBtn"),closeMessageMenuBtn:$("closeMessageMenuBtn"),editMessageDialog:$("editMessageDialog"),editMessageInput:$("editMessageInput"),saveEditedMessageBtn:$("saveEditedMessageBtn"),cancelEditMessageBtn:$("cancelEditMessageBtn"),imageDialog:$("imageDialog"),imageDialogPhoto:$("imageDialogPhoto"),closeImageDialogBtn:$("closeImageDialogBtn")};
+function toast(m){e.toast.textContent=m;e.toast.classList.add("show");clearTimeout(toast.t);toast.t=setTimeout(()=>e.toast.classList.remove("show"),3200)}
+function authStatus(m,err=false){e.authStatus.textContent=m||"";e.authStatus.style.color=err?"#b42318":"var(--accent)"}
+async function api(action,payload={}){const r=await fetch(cfg.apiUrl,{method:"POST",headers:{"Content-Type":"application/json",apikey:cfg.publishableKey,Authorization:`Bearer ${cfg.publishableKey}`},body:JSON.stringify({action,...payload})});const raw=await r.text();let d;try{d=raw?JSON.parse(raw):{}}catch{throw new Error(`Сервер вернул непонятный ответ (${r.status}).`)}if(!r.ok||d.error)throw new Error(d.error||`Ошибка сервера (${r.status}).`);return d}
+const clean=v=>v.trim().replace(/\s+/g," "),initial=n=>(n||"P").trim().charAt(0).toUpperCase();
+function esc(v){return String(v??"").replaceAll("&","&amp;").replaceAll("<","&lt;").replaceAll(">","&gt;").replaceAll('"',"&quot;").replaceAll("'","&#039;")}
+function fmt(v){return v?new Intl.DateTimeFormat("ru",{hour:"2-digit",minute:"2-digit"}).format(new Date(v)):""}
+function ago(v){if(!v)return"";const s=Math.max(1,Math.floor((Date.now()-new Date(v))/1000));if(s<60)return"только что";if(s<3600)return`${Math.floor(s/60)} мин. назад`;if(s<86400)return`${Math.floor(s/3600)} ч. назад`;return`${Math.floor(s/86400)} дн. назад`}
+function online(u){return u?.last_seen_at&&Date.now()-new Date(u.last_seen_at).getTime()<90000}
+function avatarHTML(u){return u?.avatar_url?`<img src="${esc(u.avatar_url)}" alt="">`:esc(initial(u?.username))}
+function setAvatar(el,u){el.innerHTML=avatarHTML(u)}
+function applyTheme(t){const x=["pink","purple","peach","dark"].includes(t)?t:"pink";document.documentElement.dataset.theme=x;localStorage.setItem(THEME_KEY,x)}
+function setMode(m){state.mode=m;e.loginTab.classList.toggle("active",m==="login");e.registerTab.classList.toggle("active",m==="register");e.authSubmit.textContent=m==="login"?"Войти":"Создать аккаунт";e.authPassword.autocomplete=m==="login"?"current-password":"new-password";authStatus("")}
+function showAuth(){clearInterval(state.pollTimer);state.user=null;state.activeConversation=null;e.appScreen.classList.add("hidden");e.authScreen.classList.remove("hidden")}
+function profileUI(){if(!state.user)return;e.currentUsername.textContent=state.user.username;setAvatar(e.currentAvatar,state.user);applyTheme(state.user.theme||localStorage.getItem(THEME_KEY)||"pink")}
+async function showApp(u){state.user=u;profileUI();e.authScreen.classList.add("hidden");e.appScreen.classList.remove("hidden");await refreshAll();await updateNotificationUI();clearInterval(state.pollTimer);state.pollTimer=setInterval(async()=>{try{await Promise.all([loadConversations(),loadStories(),api("heartbeat",{token:state.token})]);if(state.activeConversation)await loadMessages(false)}catch(x){console.warn(x)}},cfg.pollIntervalMs)}
+async function refreshAll(){await Promise.all([loadUsers(),loadConversations(),loadStories()]);if(state.activeConversation)await loadMessages();updateBadge()}
+async function loadUsers(){if(!state.token)return;state.users=(await api("list_users",{token:state.token})).users||[];renderUsers()}
+async function loadConversations(){if(!state.token)return;state.conversations=(await api("list_conversations",{token:state.token})).conversations||[];if(state.activeConversation){const x=state.conversations.find(c=>c.id===state.activeConversation.id);if(x){state.activeConversation=x;updateChatHead()}}renderConversations();updateBadge()}
+async function loadStories(){if(!state.token)return;state.stories=(await api("list_stories",{token:state.token})).stories||[];renderStories()}
+function updateChatHead(){const u=state.activeConversation?.other_user;if(!u)return;e.chatTitle.textContent=u.username;e.chatSubtitle.textContent=online(u)?"в сети":u.last_seen_at?`был(а) ${ago(u.last_seen_at)}`:(u.bio||"личная переписка");setAvatar(e.chatAvatar,u)}
+function renderConversations(){if(!state.conversations.length){e.conversationList.innerHTML='<div class="empty-small">Чатов пока нет</div>';return}e.conversationList.innerHTML=state.conversations.map(c=>{const a=state.activeConversation?.id===c.id?" active":"",l=c.last_message,p=l?.deleted_at?"Сообщение удалено":l?.image_url?(l.body?`📷 ${l.body}`:"📷 Фотография"):(l?.body||"Начните переписку"),n=Number(c.unread_count||0);return`<button class="conversation${a}" type="button" data-conversation-id="${c.id}"><span class="avatar-wrap"><span class="avatar">${avatarHTML(c.other_user)}</span>${online(c.other_user)?'<span class="online-dot"></span>':""}</span><span class="conversation-main"><span class="conversation-top"><span class="conversation-name">${esc(c.other_user.username)}</span></span><span class="conversation-preview">${esc(p)}</span></span><span class="conversation-side"><span class="conversation-time">${fmt(l?.created_at)}</span>${n?`<span class="unread-badge">${n>99?"99+":n}</span>`:""}</span></button>`}).join("")}
+function renderUsers(){const q=e.userSearch.value.trim().toLocaleLowerCase("ru"),f=state.users.filter(u=>u.id!==state.user?.id&&u.username.toLocaleLowerCase("ru").includes(q));e.userList.innerHTML=f.length?f.map(u=>`<div class="user-card"><div class="avatar">${avatarHTML(u)}</div><div><strong>${esc(u.username)}</strong><div class="conversation-preview">${online(u)?"в сети":esc(u.bio||"")}</div></div><button type="button" data-user-id="${u.id}">Написать</button></div>`).join(""):'<div class="empty-small">Пользователи не найдены</div>'}
+function renderStories(){if(!state.stories.length){e.storyList.innerHTML='<div class="story-empty">Пока нет историй — будь первым ✨</div>';return}e.storyList.innerHTML=state.stories.map((s,i)=>`<button class="story-item${s.viewed_by_me||s.user_id===state.user.id?" viewed":""}" type="button" data-story-index="${i}"><span class="story-ring"><span class="avatar">${avatarHTML(s.user)}</span></span><span class="story-name">${s.user_id===state.user.id?"Моя":esc(s.user.username)}</span></button>`).join("")}
+async function openConversation(id){const c=state.conversations.find(x=>x.id===id);if(!c)return;state.activeConversation=c;updateChatHead();e.emptyChat.classList.add("hidden");e.activeChat.classList.remove("hidden");e.appScreen.classList.add("chat-open");renderConversations();await loadMessages();e.messageInput.focus();history.replaceState(null,"",`${location.pathname}?chat=${encodeURIComponent(id)}`)}
+async function loadMessages(scroll=true){if(!state.activeConversation)return;const d=await api("get_messages",{token:state.token,conversation_id:state.activeConversation.id});const next=d.messages||[],changed=JSON.stringify(next)!==JSON.stringify(state.messages);state.messages=next;if(changed)renderMessages(scroll);await loadConversations()}
+function renderMessages(scroll=true){e.messageList.innerHTML=state.messages.length?state.messages.map(m=>{const mine=m.sender_id===state.user.id,del=!!m.deleted_at,body=del?"Сообщение удалено":(m.body||""),img=!del&&m.image_url?`<img class="bubble-photo" src="${esc(m.image_url)}" data-full-image="${esc(m.image_url)}" alt="Фотография">`:"",menu=mine&&!del?`<button class="message-menu-button" type="button" data-message-menu="${m.id}" aria-label="Меню сообщения">⋯</button>`:"",read=mine&&!del?`<span class="read-mark">${m.read_at?"✓✓":"✓"}</span>`:"";return`<div class="bubble-row${mine?" mine":""}"><div class="bubble${del?" deleted":""}${img?" has-image":""}" data-message-id="${m.id}" data-mine="${mine?"1":"0"}">${menu}${img}<span class="bubble-text">${esc(body)}</span><span class="bubble-meta">${m.edited_at&&!del?'<span class="edited-mark">✎</span>':""}<span>${fmt(m.created_at)}</span>${read}</span></div></div>`}).join(""):'<div class="empty-small">Напиши первое сообщение 💗</div>';if(scroll)e.messageList.scrollTop=e.messageList.scrollHeight}
+async function updateBadge(){const n=state.conversations.reduce((s,c)=>s+Number(c.unread_count||0),0);try{if(n&&navigator.setAppBadge)await navigator.setAppBadge(n);else if(navigator.clearAppBadge)await navigator.clearAppBadge()}catch{}}
+function clearPhoto(){state.selectedPhotoData="";e.photoInput.value="";e.mediaPreview.classList.add("hidden");e.mediaPreviewImage.removeAttribute("src")}
+async function compress(file,max,q=.82){if(!file.type.startsWith("image/"))throw new Error("Выбери изображение.");if(file.size>12*1024*1024)throw new Error("Файл слишком большой. Максимум 12 МБ.");const url=URL.createObjectURL(file);try{const im=new Image;im.src=url;await im.decode();let{width:w,height:h}=im,scale=Math.min(1,max/Math.max(w,h));w=Math.max(1,Math.round(w*scale));h=Math.max(1,Math.round(h*scale));const c=document.createElement("canvas");c.width=w;c.height=h;c.getContext("2d").drawImage(im,0,0,w,h);return c.toDataURL("image/jpeg",q)}finally{URL.revokeObjectURL(url)}}
+function openProfile(){state.selectedAvatarData="";e.profileUsername.value=state.user.username;e.profileBio.value=state.user.bio||"";e.profileTheme.value=state.user.theme||"pink";setAvatar(e.profileAvatarPreview,state.user);e.profileDialog.showModal();updateNotificationUI()}
+function b64ToU8(s){const p="=".repeat((4-s.length%4)%4),b=(s+p).replace(/-/g,"+").replace(/_/g,"/"),r=atob(b);return Uint8Array.from([...r].map(c=>c.charCodeAt(0)))}
+function isStandalone(){return matchMedia("(display-mode: standalone)").matches||window.navigator.standalone===true}
+async function updateNotificationUI(){if(!("serviceWorker"in navigator)&&!("PushManager"in window)){e.notificationStatus.textContent="Не поддерживаются этим браузером";e.notificationBtn.disabled=true;return}if(!("Notification"in window)||!("PushManager"in window)){e.notificationStatus.textContent="Не поддерживаются этим браузером";e.notificationBtn.disabled=true;return}const reg=await navigator.serviceWorker.ready,sub=await reg.pushManager.getSubscription();if(sub&&Notification.permission==="granted"){e.notificationStatus.textContent="Включены";e.notificationBtn.textContent="Включены ✓";e.notificationBtn.disabled=true}else{e.notificationStatus.textContent=Notification.permission==="denied"?"Запрещены в настройках":"Выключены";e.notificationBtn.textContent="Включить";e.notificationBtn.disabled=Notification.permission==="denied"}}
+async function enablePush(){if(/iPhone|iPad|iPod/.test(navigator.userAgent)&&!isStandalone())throw new Error("На iPhone сначала добавь PinkSasha на экран «Домой» и открой с иконки.");if(!("serviceWorker"in navigator)||!("PushManager"in window)||!("Notification"in window))throw new Error("Этот браузер не поддерживает уведомления.");const perm=await Notification.requestPermission();if(perm!=="granted")throw new Error("Разрешение на уведомления не выдано.");const reg=await navigator.serviceWorker.ready;let sub=await reg.pushManager.getSubscription();if(!sub)sub=await reg.pushManager.subscribe({userVisibleOnly:true,applicationServerKey:b64ToU8(cfg.vapidPublicKey)});await api("save_push_subscription",{token:state.token,subscription:sub.toJSON(),user_agent:navigator.userAgent});await updateNotificationUI();toast("Уведомления включены 🔔")}
+function openStory(i){if(!state.stories.length)return;state.storyIndex=(i+state.stories.length)%state.stories.length;const s=state.stories[state.storyIndex];setAvatar(e.storyViewerAvatar,s.user);e.storyViewerName.textContent=s.user_id===state.user.id?"Моя история":s.user.username;e.storyViewerTime.textContent=ago(s.created_at);e.storyViewerImage.src=s.image_url;e.storyViewerCaption.textContent=s.caption||"";e.deleteStoryBtn.classList.toggle("hidden",s.user_id!==state.user.id);e.storyViewsBtn.classList.toggle("hidden",s.user_id!==state.user.id);e.storyViewsBtn.textContent=`👁 ${s.views_count||0}`;e.storyViewerDialog.showModal();api("view_story",{token:state.token,story_id:s.id}).then(loadStories).catch(console.warn);clearTimeout(state.storyTimer);e.storyProgressBar.style.transition="none";e.storyProgressBar.style.width="0";requestAnimationFrame(()=>requestAnimationFrame(()=>{e.storyProgressBar.style.transition="width 7s linear";e.storyProgressBar.style.width="100%"}));state.storyTimer=setTimeout(()=>openStory(state.storyIndex+1),7000)}
+function closeStory(){clearTimeout(state.storyTimer);e.storyViewerDialog.close()}
+e.loginTab.onclick=()=>setMode("login");e.registerTab.onclick=()=>setMode("register");
+e.authForm.onsubmit=async ev=>{ev.preventDefault();const username=clean(e.authUsername.value),password=e.authPassword.value;if(username.length<3)return authStatus("Имя должно содержать минимум 3 символа.",true);if(password.length<6)return authStatus("Пароль должен содержать минимум 6 символов.",true);e.authSubmit.disabled=true;authStatus("Подключаемся…");try{const d=await api(state.mode,{username,password});state.token=d.token;localStorage.setItem(TOKEN_KEY,state.token);e.authPassword.value="";authStatus("");await showApp(d.user)}catch(x){authStatus(x.message,true)}finally{e.authSubmit.disabled=false}};
+e.logoutBtn.onclick=async()=>{try{if(state.token)await api("logout",{token:state.token})}catch{}localStorage.removeItem(TOKEN_KEY);state.token="";showAuth()};
+e.profileBtn.onclick=openProfile;e.closeProfileBtn.onclick=()=>e.profileDialog.close();e.chooseAvatarBtn.onclick=()=>e.avatarInput.click();
+e.avatarInput.onchange=async()=>{const f=e.avatarInput.files?.[0];if(!f)return;try{state.selectedAvatarData=await compress(f,700,.84);e.profileAvatarPreview.innerHTML=`<img src="${state.selectedAvatarData}" alt="">`}catch(x){toast(x.message)}};
+e.profileTheme.onchange=()=>applyTheme(e.profileTheme.value);e.notificationBtn.onclick=()=>enablePush().catch(x=>toast(x.message));
+e.saveProfileBtn.onclick=async()=>{const username=clean(e.profileUsername.value);if(username.length<3)return toast("Имя должно содержать минимум 3 символа.");e.saveProfileBtn.disabled=true;try{const d=await api("update_profile",{token:state.token,username,bio:e.profileBio.value.trim(),theme:e.profileTheme.value,avatar_data_url:state.selectedAvatarData||undefined});state.user=d.user;profileUI();e.profileDialog.close();await refreshAll();toast("Профиль сохранён")}catch(x){toast(x.message)}finally{e.saveProfileBtn.disabled=false}};
+e.newChatBtn.onclick=async()=>{try{await loadUsers();e.newChatDialog.showModal();e.userSearch.focus()}catch(x){toast(x.message)}};e.refreshBtn.onclick=()=>refreshAll().then(()=>toast("Обновлено")).catch(x=>toast(x.message));e.userSearch.oninput=renderUsers;
+e.userList.onclick=async ev=>{const b=ev.target.closest("[data-user-id]");if(!b)return;b.disabled=true;try{const d=await api("start_chat",{token:state.token,target_user_id:b.dataset.userId});e.newChatDialog.close();await loadConversations();await openConversation(d.conversation_id)}catch(x){toast(x.message)}finally{b.disabled=false}};
+e.conversationList.onclick=ev=>{const b=ev.target.closest("[data-conversation-id]");if(b)openConversation(b.dataset.conversationId).catch(x=>toast(x.message))};e.backBtn.onclick=()=>{e.appScreen.classList.remove("chat-open");history.replaceState(null,"",location.pathname)};
+e.emojiPanel.innerHTML=EMOJIS.map(x=>`<button type="button" data-emoji="${x}">${x}</button>`).join("");e.emojiBtn.onclick=()=>e.emojiPanel.classList.toggle("hidden");e.emojiPanel.onclick=ev=>{const b=ev.target.closest("[data-emoji]");if(!b)return;const s=e.messageInput.selectionStart,n=e.messageInput.selectionEnd;e.messageInput.setRangeText(b.dataset.emoji,s,n,"end");e.messageInput.focus()};
+e.photoBtn.onclick=()=>e.photoInput.click();e.photoInput.onchange=async()=>{const f=e.photoInput.files?.[0];if(!f)return;try{toast("Готовим фотографию…");state.selectedPhotoData=await compress(f,1400,.82);e.mediaPreviewImage.src=state.selectedPhotoData;e.mediaPreview.classList.remove("hidden")}catch(x){clearPhoto();toast(x.message)}};e.removeMediaBtn.onclick=clearPhoto;
+e.messageForm.onsubmit=async ev=>{ev.preventDefault();const body=e.messageInput.value.trim();if((!body&&!state.selectedPhotoData)||!state.activeConversation)return;const photo=state.selectedPhotoData;e.messageInput.value="";clearPhoto();try{await api("send_message",{token:state.token,conversation_id:state.activeConversation.id,body,image_data_url:photo||undefined});await Promise.all([loadMessages(),loadConversations()])}catch(x){e.messageInput.value=body;state.selectedPhotoData=photo;if(photo){e.mediaPreviewImage.src=photo;e.mediaPreview.classList.remove("hidden")}toast(x.message)}};
+e.messageInput.onkeydown=ev=>{if(ev.key==="Enter"&&!ev.shiftKey){ev.preventDefault();e.messageForm.requestSubmit()}};
+function selectMessage(id){const m=state.messages.find(x=>x.id===id);if(!m||m.sender_id!==state.user.id||m.deleted_at)return;state.selectedMessage=m;e.messageMenuDialog.showModal()}
+e.messageList.onclick=ev=>{const b=ev.target.closest("[data-message-menu]");if(b){ev.stopPropagation();selectMessage(b.dataset.messageMenu);return}const im=ev.target.closest("[data-full-image]");if(im){e.imageDialogPhoto.src=im.dataset.fullImage;e.imageDialog.showModal()}};
+e.messageList.oncontextmenu=ev=>{const b=ev.target.closest("[data-message-id]");if(!b||b.dataset.mine!=="1")return;ev.preventDefault();selectMessage(b.dataset.messageId)};
+e.editMessageBtn.onclick=()=>{if(!state.selectedMessage)return;e.messageMenuDialog.close();e.editMessageInput.value=state.selectedMessage.body||"";e.editMessageDialog.showModal();e.editMessageInput.focus()};
+e.saveEditedMessageBtn.onclick=async()=>{if(!state.selectedMessage)return;const body=e.editMessageInput.value.trim();if(!body&&!state.selectedMessage.image_url)return toast("Сообщение не может быть пустым.");try{await api("edit_message",{token:state.token,message_id:state.selectedMessage.id,body});e.editMessageDialog.close();await Promise.all([loadMessages(),loadConversations()]);toast("Сообщение изменено")}catch(x){toast(x.message)}};
+e.cancelEditMessageBtn.onclick=()=>e.editMessageDialog.close();e.deleteMessageBtn.onclick=async()=>{if(!state.selectedMessage||!confirm("Удалить сообщение?"))return;try{await api("delete_message",{token:state.token,message_id:state.selectedMessage.id});e.messageMenuDialog.close();await Promise.all([loadMessages(),loadConversations()]);toast("Сообщение удалено")}catch(x){toast(x.message)}};e.closeMessageMenuBtn.onclick=()=>e.messageMenuDialog.close();e.closeImageDialogBtn.onclick=()=>e.imageDialog.close();e.imageDialog.onclick=ev=>{if(ev.target===e.imageDialog)e.imageDialog.close()};
+e.addStoryBtn.onclick=()=>{state.selectedStoryData="";e.storyPhotoInput.value="";e.storyCaption.value="";e.storyCreatePreview.classList.add("hidden");e.storyCreatePlaceholder.classList.remove("hidden");e.storyCreateDialog.showModal()};e.closeStoryCreateBtn.onclick=()=>e.storyCreateDialog.close();e.chooseStoryPhotoBtn.onclick=()=>e.storyPhotoInput.click();
+e.storyPhotoInput.onchange=async()=>{const f=e.storyPhotoInput.files?.[0];if(!f)return;try{state.selectedStoryData=await compress(f,1600,.84);e.storyCreatePreview.src=state.selectedStoryData;e.storyCreatePreview.classList.remove("hidden");e.storyCreatePlaceholder.classList.add("hidden")}catch(x){toast(x.message)}};
+e.publishStoryBtn.onclick=async()=>{if(!state.selectedStoryData)return toast("Выбери фотографию.");e.publishStoryBtn.disabled=true;try{await api("create_story",{token:state.token,image_data_url:state.selectedStoryData,caption:e.storyCaption.value.trim()});e.storyCreateDialog.close();await loadStories();toast("История опубликована ✨")}catch(x){toast(x.message)}finally{e.publishStoryBtn.disabled=false}};
+e.storyList.onclick=ev=>{const b=ev.target.closest("[data-story-index]");if(b)openStory(Number(b.dataset.storyIndex))};e.storyPrevBtn.onclick=()=>openStory(state.storyIndex-1);e.storyNextBtn.onclick=()=>openStory(state.storyIndex+1);e.closeStoryViewerBtn.onclick=closeStory;
+e.deleteStoryBtn.onclick=async()=>{const s=state.stories[state.storyIndex];if(!s||!confirm("Удалить историю?"))return;try{await api("delete_story",{token:state.token,story_id:s.id});closeStory();await loadStories();toast("История удалена")}catch(x){toast(x.message)}};
+e.storyViewsBtn.onclick=async()=>{const s=state.stories[state.storyIndex];if(!s)return;try{const d=await api("story_viewers",{token:state.token,story_id:s.id});e.storyViewersList.innerHTML=d.viewers?.length?d.viewers.map(v=>`<div class="user-card"><div class="avatar">${avatarHTML(v)}</div><strong>${esc(v.username)}</strong><span>${ago(v.viewed_at)}</span></div>`).join(""):'<div class="empty-small">Пока никто не посмотрел</div>';e.storyViewersDialog.showModal()}catch(x){toast(x.message)}};e.closeStoryViewersBtn.onclick=()=>e.storyViewersDialog.close();
+async function boot(){applyTheme(localStorage.getItem(THEME_KEY)||"pink");if(!cfg?.apiUrl||!cfg?.publishableKey)return authStatus("Не заполнен config.js.",true);if(!state.token)return showAuth();authStatus("Проверяем сессию…");try{const d=await api("session",{token:state.token});await showApp(d.user);const wanted=new URLSearchParams(location.search).get("chat");if(wanted)await openConversation(wanted)}catch{localStorage.removeItem(TOKEN_KEY);state.token="";showAuth()}}
+if("serviceWorker"in navigator)window.addEventListener("load",()=>navigator.serviceWorker.register("./sw.js").catch(console.warn));boot();
 })();

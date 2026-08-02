@@ -4,9 +4,13 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
   <meta name="theme-color" content="#ff4fa3">
-  <meta name="description" content="PinkSasha — розовый мессенджер">
+  <meta name="description" content="PinkSasha — уютный мессенджер">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="default">
+  <meta name="apple-mobile-web-app-title" content="PinkSasha">
   <title>PinkSasha</title>
   <link rel="manifest" href="./manifest.webmanifest">
+  <link rel="apple-touch-icon" href="./apple-touch-icon.png">
   <link rel="stylesheet" href="./styles.css">
 </head>
 <body>
@@ -18,26 +22,19 @@
         <div class="brand-mark">💗</div>
         <h1>PinkSasha</h1>
         <p class="muted center">Твой уютный мессенджер</p>
-
         <div class="tabs">
           <button id="loginTab" class="tab active" type="button">Войти</button>
           <button id="registerTab" class="tab" type="button">Регистрация</button>
         </div>
-
         <form id="authForm" novalidate>
-          <label class="field">
-            <span>Имя</span>
-            <input id="authUsername" minlength="3" maxlength="30" autocomplete="username"
-                   placeholder="Например: Саша" required>
+          <label class="field"><span>Имя</span>
+            <input id="authUsername" minlength="3" maxlength="30" autocomplete="username" placeholder="Например: Саша" required>
           </label>
-          <label class="field">
-            <span>Пароль</span>
-            <input id="authPassword" type="password" minlength="6" maxlength="100"
-                   autocomplete="current-password" placeholder="Минимум 6 символов" required>
+          <label class="field"><span>Пароль</span>
+            <input id="authPassword" type="password" minlength="6" maxlength="100" autocomplete="current-password" placeholder="Минимум 6 символов" required>
           </label>
           <button id="authSubmit" class="primary large" type="submit">Войти</button>
         </form>
-
         <p id="authStatus" class="status" aria-live="polite"></p>
       </div>
     </section>
@@ -54,6 +51,14 @@
           </button>
           <button id="logoutBtn" class="icon-btn" type="button" title="Выйти">↪</button>
         </header>
+
+        <section class="stories-section">
+          <div class="stories-head">
+            <span class="section-title compact">Истории</span>
+            <button id="addStoryBtn" class="story-add-link" type="button">＋ Добавить</button>
+          </div>
+          <div id="storyList" class="story-list"></div>
+        </section>
 
         <div class="sidebar-actions">
           <button id="newChatBtn" class="primary" type="button">＋ Новый чат</button>
@@ -82,15 +87,11 @@
               <p id="chatSubtitle">личная переписка</p>
             </div>
           </header>
-
           <div id="messageList" class="messages"></div>
 
           <div id="mediaPreview" class="media-preview hidden">
             <img id="mediaPreviewImage" alt="Предпросмотр фотографии">
-            <div class="media-preview-info">
-              <strong>Фотография готова</strong>
-              <span>Можно добавить подпись и отправить</span>
-            </div>
+            <div class="media-preview-info"><strong>Фотография готова</strong><span>Можно добавить подпись и отправить</span></div>
             <button id="removeMediaBtn" class="icon-btn" type="button" title="Убрать фото">✕</button>
           </div>
 
@@ -99,8 +100,7 @@
           <form id="messageForm" class="composer">
             <button id="photoBtn" class="composer-btn" type="button" title="Отправить фото">📷</button>
             <button id="emojiBtn" class="composer-btn" type="button" title="Эмодзи">☺</button>
-            <textarea id="messageInput" rows="1" maxlength="2000"
-                      placeholder="Сообщение…"></textarea>
+            <textarea id="messageInput" rows="1" maxlength="2000" placeholder="Сообщение…"></textarea>
             <button class="send-btn" type="submit" title="Отправить">➤</button>
             <input id="photoInput" type="file" accept="image/jpeg,image/png,image/webp,image/gif" hidden>
           </form>
@@ -111,13 +111,8 @@
 
   <dialog id="newChatDialog" class="dialog">
     <form method="dialog" class="dialog-card">
-      <div class="dialog-head">
-        <div>
-          <div class="eyebrow">Новый чат</div>
-          <h3>Выбери пользователя</h3>
-        </div>
-        <button class="icon-btn" value="cancel" type="submit">✕</button>
-      </div>
+      <div class="dialog-head"><div><div class="eyebrow">Новый чат</div><h3>Выбери пользователя</h3></div>
+        <button class="icon-btn" value="cancel" type="submit">✕</button></div>
       <input id="userSearch" class="search" placeholder="Поиск по имени">
       <div id="userList" class="user-list"></div>
     </form>
@@ -125,64 +120,77 @@
 
   <dialog id="profileDialog" class="dialog">
     <div class="dialog-card profile-dialog-card">
-      <div class="dialog-head">
-        <div>
-          <div class="eyebrow">Мой профиль</div>
-          <h3>Настройки</h3>
-        </div>
-        <button id="closeProfileBtn" class="icon-btn" type="button">✕</button>
-      </div>
-
+      <div class="dialog-head"><div><div class="eyebrow">Мой профиль</div><h3>Настройки</h3></div>
+        <button id="closeProfileBtn" class="icon-btn" type="button">✕</button></div>
       <div class="profile-avatar-editor">
         <div id="profileAvatarPreview" class="avatar avatar-large">P</div>
-        <div>
-          <button id="chooseAvatarBtn" class="secondary" type="button">Выбрать аватарку</button>
-          <p class="hint">JPG, PNG или WEBP</p>
-          <input id="avatarInput" type="file" accept="image/jpeg,image/png,image/webp" hidden>
-        </div>
+        <div><button id="chooseAvatarBtn" class="secondary" type="button">Выбрать аватарку</button>
+          <p class="hint">JPG, PNG или WEBP</p><input id="avatarInput" type="file" accept="image/jpeg,image/png,image/webp" hidden></div>
       </div>
-
-      <label class="field">
-        <span>Имя</span>
-        <input id="profileUsername" minlength="3" maxlength="30">
-      </label>
-
-      <label class="field">
-        <span>О себе</span>
-        <textarea id="profileBio" rows="3" maxlength="160"
-                  placeholder="Напиши пару слов о себе"></textarea>
-      </label>
-
-      <label class="field">
-        <span>Тема приложения</span>
+      <label class="field"><span>Имя</span><input id="profileUsername" minlength="3" maxlength="30"></label>
+      <label class="field"><span>О себе</span><textarea id="profileBio" rows="3" maxlength="160" placeholder="Напиши пару слов о себе"></textarea></label>
+      <label class="field"><span>Тема приложения</span>
         <select id="profileTheme">
-          <option value="pink">Розовая</option>
-          <option value="purple">Фиолетовая</option>
-          <option value="peach">Персиковая</option>
-          <option value="dark">Тёмная</option>
+          <option value="pink">Розовая</option><option value="purple">Фиолетовая</option>
+          <option value="peach">Персиковая</option><option value="dark">Тёмная</option>
         </select>
       </label>
-
+      <section class="notification-card">
+        <div><strong>Уведомления</strong><p id="notificationStatus" class="hint">Проверяем поддержку…</p></div>
+        <button id="notificationBtn" class="secondary" type="button">Включить</button>
+      </section>
+      <p class="ios-note">На iPhone: открой сайт в Safari → «Поделиться» → «На экран Домой», затем открой PinkSasha с иконки и нажми «Включить».</p>
       <button id="saveProfileBtn" class="primary full" type="button">Сохранить профиль</button>
     </div>
   </dialog>
 
-  <dialog id="messageMenuDialog" class="dialog small-dialog">
+  <dialog id="storyCreateDialog" class="dialog">
     <div class="dialog-card">
-      <h3>Сообщение</h3>
-      <button id="editMessageBtn" class="secondary full" type="button">✏️ Редактировать</button>
-      <button id="deleteMessageBtn" class="danger full" type="button">🗑️ Удалить</button>
-      <button id="closeMessageMenuBtn" class="ghost full" type="button">Закрыть</button>
+      <div class="dialog-head"><div><div class="eyebrow">Новая история</div><h3>На 24 часа</h3></div>
+        <button id="closeStoryCreateBtn" class="icon-btn" type="button">✕</button></div>
+      <button id="chooseStoryPhotoBtn" class="story-photo-picker" type="button">
+        <img id="storyCreatePreview" class="hidden" alt="Предпросмотр истории">
+        <span id="storyCreatePlaceholder">📸<b>Выбрать фотографию</b></span>
+      </button>
+      <input id="storyPhotoInput" type="file" accept="image/jpeg,image/png,image/webp" hidden>
+      <label class="field"><span>Подпись</span><textarea id="storyCaption" rows="2" maxlength="160" placeholder="Что происходит?"></textarea></label>
+      <button id="publishStoryBtn" class="primary full" type="button">Опубликовать историю</button>
     </div>
   </dialog>
 
+  <dialog id="storyViewerDialog" class="story-viewer-dialog">
+    <div class="story-viewer">
+      <div class="story-progress"><span id="storyProgressBar"></span></div>
+      <header class="story-viewer-head">
+        <div id="storyViewerAvatar" class="avatar avatar-small">P</div>
+        <div><strong id="storyViewerName">История</strong><span id="storyViewerTime"></span></div>
+        <button id="deleteStoryBtn" class="story-head-btn hidden" type="button">Удалить</button>
+        <button id="closeStoryViewerBtn" class="story-head-btn" type="button">✕</button>
+      </header>
+      <button id="storyPrevBtn" class="story-nav prev" type="button" aria-label="Предыдущая история"></button>
+      <img id="storyViewerImage" alt="История">
+      <button id="storyNextBtn" class="story-nav next" type="button" aria-label="Следующая история"></button>
+      <div class="story-caption-wrap"><p id="storyViewerCaption"></p><button id="storyViewsBtn" class="story-views hidden" type="button"></button></div>
+    </div>
+  </dialog>
+
+  <dialog id="storyViewersDialog" class="dialog small-dialog">
+    <div class="dialog-card"><div class="dialog-head"><h3>Кто посмотрел</h3><button id="closeStoryViewersBtn" class="icon-btn" type="button">✕</button></div>
+      <div id="storyViewersList" class="user-list"></div></div>
+  </dialog>
+
+  <dialog id="messageMenuDialog" class="dialog small-dialog">
+    <div class="dialog-card"><h3>Сообщение</h3>
+      <button id="editMessageBtn" class="secondary full" type="button">✏️ Редактировать</button>
+      <button id="deleteMessageBtn" class="danger full" type="button">🗑️ Удалить</button>
+      <button id="closeMessageMenuBtn" class="ghost full" type="button">Закрыть</button></div>
+  </dialog>
+
   <dialog id="editMessageDialog" class="dialog small-dialog">
-    <div class="dialog-card">
-      <h3>Редактировать сообщение</h3>
+    <div class="dialog-card"><h3>Редактировать сообщение</h3>
       <textarea id="editMessageInput" class="dialog-textarea" rows="4" maxlength="2000"></textarea>
       <button id="saveEditedMessageBtn" class="primary full" type="button">Сохранить</button>
-      <button id="cancelEditMessageBtn" class="ghost full" type="button">Отмена</button>
-    </div>
+      <button id="cancelEditMessageBtn" class="ghost full" type="button">Отмена</button></div>
   </dialog>
 
   <dialog id="imageDialog" class="image-dialog">
