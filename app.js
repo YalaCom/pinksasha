@@ -240,11 +240,11 @@
               <div class="bubble${deleted ? " deleted" : ""}"
                    data-message-id="${message.id}"
                    data-mine="${mine ? "1" : "0"}">
-                ${escapeHtml(text)}
-                <div class="bubble-meta">
-                  ${message.edited_at && !deleted ? "<span>изменено</span>" : ""}
+                <span class="bubble-text">${escapeHtml(text)}</span>
+                <span class="bubble-meta">
+                  ${message.edited_at && !deleted ? '<span class="edited-mark" title="Изменено">✎</span>' : ""}
                   <span>${formatTime(message.created_at)}</span>
-                </div>
+                </span>
               </div>
             </div>`;
         }).join("")
