@@ -1,7 +1,7 @@
 {
   "name": "PinkSasha",
   "short_name": "PinkSasha",
-  "description": "Розовый мессенджер",
+  "description": "Уютный мессенджер",
   "start_url": "./",
   "scope": "./",
   "display": "standalone",
