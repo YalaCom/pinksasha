@@ -1,5 +1,5 @@
 <!doctype html>
-<html lang="ru">
+<html lang="ru" data-theme="pink">
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
@@ -17,7 +17,7 @@
       <div class="auth-card">
         <div class="brand-mark">💗</div>
         <h1>PinkSasha</h1>
-        <p class="muted center">Твой уютный розовый мессенджер</p>
+        <p class="muted center">Твой уютный мессенджер</p>
 
         <div class="tabs">
           <button id="loginTab" class="tab active" type="button">Войти</button>
@@ -45,10 +45,13 @@
     <section id="appScreen" class="app-shell hidden">
       <aside class="sidebar">
         <header class="sidebar-header">
-          <div>
-            <div class="eyebrow">PinkSasha</div>
-            <h2 id="currentUsername">Пользователь</h2>
-          </div>
+          <button id="profileBtn" class="profile-summary" type="button" title="Редактировать профиль">
+            <span id="currentAvatar" class="avatar avatar-small">P</span>
+            <span class="profile-summary-text">
+              <span class="eyebrow">PinkSasha</span>
+              <strong id="currentUsername">Пользователь</strong>
+            </span>
+          </button>
           <button id="logoutBtn" class="icon-btn" type="button" title="Выйти">↪</button>
         </header>
 
@@ -74,7 +77,7 @@
           <header class="chat-header">
             <button id="backBtn" class="icon-btn mobile-only" type="button">←</button>
             <div class="avatar" id="chatAvatar">P</div>
-            <div>
+            <div class="chat-person">
               <h3 id="chatTitle">Чат</h3>
               <p id="chatSubtitle">личная переписка</p>
             </div>
@@ -82,10 +85,24 @@
 
           <div id="messageList" class="messages"></div>
 
+          <div id="mediaPreview" class="media-preview hidden">
+            <img id="mediaPreviewImage" alt="Предпросмотр фотографии">
+            <div class="media-preview-info">
+              <strong>Фотография готова</strong>
+              <span>Можно добавить подпись и отправить</span>
+            </div>
+            <button id="removeMediaBtn" class="icon-btn" type="button" title="Убрать фото">✕</button>
+          </div>
+
+          <div id="emojiPanel" class="emoji-panel hidden" aria-label="Эмодзи"></div>
+
           <form id="messageForm" class="composer">
+            <button id="photoBtn" class="composer-btn" type="button" title="Отправить фото">📷</button>
+            <button id="emojiBtn" class="composer-btn" type="button" title="Эмодзи">☺</button>
             <textarea id="messageInput" rows="1" maxlength="2000"
-                      placeholder="Сообщение…" required></textarea>
+                      placeholder="Сообщение…"></textarea>
             <button class="send-btn" type="submit" title="Отправить">➤</button>
+            <input id="photoInput" type="file" accept="image/jpeg,image/png,image/webp,image/gif" hidden>
           </form>
         </div>
       </section>
@@ -106,13 +123,71 @@
     </form>
   </dialog>
 
+  <dialog id="profileDialog" class="dialog">
+    <div class="dialog-card profile-dialog-card">
+      <div class="dialog-head">
+        <div>
+          <div class="eyebrow">Мой профиль</div>
+          <h3>Настройки</h3>
+        </div>
+        <button id="closeProfileBtn" class="icon-btn" type="button">✕</button>
+      </div>
+
+      <div class="profile-avatar-editor">
+        <div id="profileAvatarPreview" class="avatar avatar-large">P</div>
+        <div>
+          <button id="chooseAvatarBtn" class="secondary" type="button">Выбрать аватарку</button>
+          <p class="hint">JPG, PNG или WEBP</p>
+          <input id="avatarInput" type="file" accept="image/jpeg,image/png,image/webp" hidden>
+        </div>
+      </div>
+
+      <label class="field">
+        <span>Имя</span>
+        <input id="profileUsername" minlength="3" maxlength="30">
+      </label>
+
+      <label class="field">
+        <span>О себе</span>
+        <textarea id="profileBio" rows="3" maxlength="160"
+                  placeholder="Напиши пару слов о себе"></textarea>
+      </label>
+
+      <label class="field">
+        <span>Тема приложения</span>
+        <select id="profileTheme">
+          <option value="pink">Розовая</option>
+          <option value="purple">Фиолетовая</option>
+          <option value="peach">Персиковая</option>
+          <option value="dark">Тёмная</option>
+        </select>
+      </label>
+
+      <button id="saveProfileBtn" class="primary full" type="button">Сохранить профиль</button>
+    </div>
+  </dialog>
+
   <dialog id="messageMenuDialog" class="dialog small-dialog">
     <div class="dialog-card">
       <h3>Сообщение</h3>
-      <button id="editMessageBtn" class="secondary full" type="button">Редактировать</button>
-      <button id="deleteMessageBtn" class="danger full" type="button">Удалить</button>
+      <button id="editMessageBtn" class="secondary full" type="button">✏️ Редактировать</button>
+      <button id="deleteMessageBtn" class="danger full" type="button">🗑️ Удалить</button>
       <button id="closeMessageMenuBtn" class="ghost full" type="button">Закрыть</button>
     </div>
+  </dialog>
+
+  <dialog id="editMessageDialog" class="dialog small-dialog">
+    <div class="dialog-card">
+      <h3>Редактировать сообщение</h3>
+      <textarea id="editMessageInput" class="dialog-textarea" rows="4" maxlength="2000"></textarea>
+      <button id="saveEditedMessageBtn" class="primary full" type="button">Сохранить</button>
+      <button id="cancelEditMessageBtn" class="ghost full" type="button">Отмена</button>
+    </div>
+  </dialog>
+
+  <dialog id="imageDialog" class="image-dialog">
+    <button id="closeImageDialogBtn" class="image-close" type="button">✕</button>
+    <img id="imageDialogPhoto" alt="Фотография">
   </dialog>
 
   <script src="./config.js"></script>
