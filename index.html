@@ -15,6 +15,7 @@
 </head>
 <body>
   <div id="toast" class="toast" role="status" aria-live="polite"></div>
+  <div id="heartRain" class="heart-rain" aria-hidden="true"></div>
 
   <main class="page">
     <section id="authScreen" class="auth-shell">
@@ -49,7 +50,10 @@
               <strong id="currentUsername">Пользователь</strong>
             </span>
           </button>
-          <button id="logoutBtn" class="icon-btn" type="button" title="Выйти">↪</button>
+          <div class="header-actions">
+            <button id="adminBtn" class="icon-btn hidden" type="button" title="Админ-панель">🛡</button>
+            <button id="logoutBtn" class="icon-btn" type="button" title="Выйти">↪</button>
+          </div>
         </header>
 
         <section class="stories-section">
@@ -177,6 +181,29 @@
   <dialog id="storyViewersDialog" class="dialog small-dialog">
     <div class="dialog-card"><div class="dialog-head"><h3>Кто посмотрел</h3><button id="closeStoryViewersBtn" class="icon-btn" type="button">✕</button></div>
       <div id="storyViewersList" class="user-list"></div></div>
+  </dialog>
+
+
+  <dialog id="adminDialog" class="dialog admin-dialog">
+    <div class="dialog-card admin-dialog-card">
+      <div class="dialog-head">
+        <div><div class="eyebrow">PinkSasha Admin</div><h3>Админ-панель</h3></div>
+        <button id="closeAdminBtn" class="icon-btn" type="button">✕</button>
+      </div>
+      <p class="admin-warning">Удаление выполняется навсегда из приложения, базы и хранилища. Корзины нет.</p>
+      <div id="adminStats" class="admin-stats"></div>
+      <div class="admin-toolbar">
+        <button id="adminRefreshBtn" class="secondary" type="button">Обновить</button>
+      </div>
+      <section class="admin-section">
+        <h4>Пользователи</h4>
+        <div id="adminUserList" class="admin-list"></div>
+      </section>
+      <section class="admin-section">
+        <h4>Чаты</h4>
+        <div id="adminChatList" class="admin-list"></div>
+      </section>
+    </div>
   </dialog>
 
   <dialog id="messageMenuDialog" class="dialog small-dialog">
