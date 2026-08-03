@@ -17,6 +17,15 @@
   <div id="toast" class="toast" role="status" aria-live="polite"></div>
   <div id="heartRain" class="heart-rain" aria-hidden="true"></div>
 
+  <div id="loveOverlay" class="love-overlay hidden" aria-live="assertive">
+    <div class="love-card">
+      <div class="love-big-heart">💗</div>
+      <h2 id="loveMessage">Я тебя люблю &lt;3</h2>
+      <p id="loveSender"></p>
+    </div>
+  </div>
+
+
   <main class="page">
     <section id="authScreen" class="auth-shell">
       <div class="auth-card">
@@ -95,6 +104,7 @@
               <h3 id="chatTitle">Чат</h3>
               <p id="chatSubtitle">личная переписка</p>
             </div>
+            <button id="chatSettingsBtn" class="icon-btn chat-settings-btn" type="button" title="Фон чата">⚙</button>
           </header>
           <div id="messageList" class="messages"></div>
           <button id="scrollBottomBtn" class="scroll-bottom-btn hidden" type="button" aria-label="Вниз">↓</button>
@@ -189,6 +199,27 @@
       <div id="storyViewersList" class="user-list"></div></div>
   </dialog>
 
+
+
+  <dialog id="chatBackgroundDialog" class="dialog">
+    <div class="dialog-card wallpaper-dialog-card">
+      <div class="dialog-head">
+        <div><div class="eyebrow">Оформление чата</div><h3>Фон переписки</h3></div>
+        <button id="closeChatBackgroundBtn" class="icon-btn" type="button">✕</button>
+      </div>
+      <p class="wallpaper-help">Выбранный фон будет одинаковым у обоих участников чата.</p>
+      <div id="wallpaperGrid" class="wallpaper-grid">
+        <button class="wallpaper-option wallpaper-rose" type="button" data-wallpaper="rose"><span></span><b>Розовый</b></button>
+        <button class="wallpaper-option wallpaper-paper" type="button" data-wallpaper="paper"><span></span><b>Светлый</b></button>
+        <button class="wallpaper-option wallpaper-lavender" type="button" data-wallpaper="lavender"><span></span><b>Лаванда</b></button>
+        <button class="wallpaper-option wallpaper-midnight" type="button" data-wallpaper="midnight"><span></span><b>Ночной</b></button>
+        <button class="wallpaper-option wallpaper-hearts" type="button" data-wallpaper="hearts"><span></span><b>Сердечки</b></button>
+      </div>
+      <button id="chooseChatWallpaperBtn" class="secondary full wallpaper-upload" type="button">🖼 Выбрать фото из галереи</button>
+      <input id="chatWallpaperInput" type="file" accept="image/jpeg,image/png,image/webp" hidden>
+      <p id="wallpaperStatus" class="hint center"></p>
+    </div>
+  </dialog>
 
   <dialog id="adminDialog" class="dialog admin-dialog">
     <div class="dialog-card admin-dialog-card">
