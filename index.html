@@ -56,6 +56,11 @@
           </div>
         </header>
 
+        <label class="sidebar-search" aria-label="Поиск по чатам">
+          <span>⌕</span>
+          <input id="chatSearch" type="search" placeholder="Поиск" autocomplete="off">
+        </label>
+
         <section class="stories-section">
           <div class="stories-head">
             <span class="section-title compact">Истории</span>
@@ -66,7 +71,7 @@
 
         <div class="sidebar-actions">
           <button id="newChatBtn" class="primary" type="button">＋ Новый чат</button>
-          <button id="refreshBtn" class="secondary" type="button">Обновить</button>
+          <button id="refreshBtn" class="secondary refresh-compact" type="button" title="Обновить">↻</button>
         </div>
 
         <div class="section-title">Мои чаты</div>
@@ -92,6 +97,7 @@
             </div>
           </header>
           <div id="messageList" class="messages"></div>
+          <button id="scrollBottomBtn" class="scroll-bottom-btn hidden" type="button" aria-label="Вниз">↓</button>
 
           <div id="mediaPreview" class="media-preview hidden">
             <img id="mediaPreviewImage" alt="Предпросмотр фотографии">
