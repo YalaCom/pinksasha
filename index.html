@@ -99,13 +99,17 @@
         <div id="activeChat" class="active-chat hidden">
           <header class="chat-header">
             <button id="backBtn" class="icon-btn mobile-only" type="button">←</button>
-            <div class="avatar" id="chatAvatar">P</div>
+            <button class="avatar avatar-button" id="chatAvatar" type="button" title="Фото из чата">P</button>
             <div class="chat-person">
               <h3 id="chatTitle">Чат</h3>
               <p id="chatSubtitle">личная переписка</p>
             </div>
-            <button id="chatSettingsBtn" class="icon-btn chat-settings-btn" type="button" title="Фон чата">⚙</button>
+            <div class="chat-header-actions"><button id="calendarBtn" class="icon-btn" type="button" title="Общий календарь">🗓</button><button id="chatSettingsBtn" class="icon-btn chat-settings-btn" type="button" title="Фон чата">⚙</button></div>
           </header>
+          <button id="pinnedBanner" class="pinned-banner hidden" type="button">
+            <span>📌</span><span class="pinned-copy"><b>Закреплённое сообщение</b><small id="pinnedText"></small></span>
+            <span id="unpinBtn" class="pinned-close" role="button" aria-label="Открепить">✕</span>
+          </button>
           <div id="messageList" class="messages"></div>
           <button id="scrollBottomBtn" class="scroll-bottom-btn hidden" type="button" aria-label="Вниз">↓</button>
 
@@ -115,11 +119,34 @@
             <button id="removeMediaBtn" class="icon-btn" type="button" title="Убрать фото">✕</button>
           </div>
 
+          <div id="replyPreview" class="reply-preview hidden">
+            <span class="reply-line"></span><div><b id="replyName">Ответ</b><span id="replyText"></span></div>
+            <button id="cancelReplyBtn" class="reply-close" type="button">✕</button>
+          </div>
+
+          <div id="attachmentPanel" class="attachment-panel hidden">
+            <button id="photoBtn" type="button"><span>📷</span><b>Фото</b></button>
+            <button id="voiceBtn" type="button"><span>🎙</span><b>Голос</b></button>
+            <button id="videoBtn" type="button"><span>◉</span><b>Кружок</b></button>
+          </div>
+
           <div id="emojiPanel" class="emoji-panel hidden" aria-label="Эмодзи"></div>
+          <div id="stickerPanel" class="sticker-panel hidden">
+            <div id="stickerPackTabs" class="sticker-pack-tabs"></div>
+            <div id="stickerGrid" class="sticker-grid"><div class="empty-small">Загрузка стикеров…</div></div>
+          </div>
+
+          <div id="recordingBar" class="recording-bar hidden">
+            <span id="recordingPulse" class="recording-pulse"></span>
+            <div><b id="recordingLabel">Запись голоса</b><span id="recordingTimer">00:00</span></div>
+            <button id="cancelRecordingBtn" class="ghost" type="button">Отмена</button>
+            <button id="stopRecordingBtn" class="primary" type="button">Отправить</button>
+          </div>
 
           <form id="messageForm" class="composer">
-            <button id="photoBtn" class="composer-btn" type="button" title="Отправить фото">📷</button>
+            <button id="attachBtn" class="composer-btn" type="button" title="Вложения">＋</button>
             <button id="emojiBtn" class="composer-btn" type="button" title="Эмодзи">☺</button>
+            <button id="stickerBtn" class="composer-btn" type="button" title="Стикеры">▣</button>
             <textarea id="messageInput" rows="1" maxlength="2000" placeholder="Сообщение…"></textarea>
             <button class="send-btn" type="submit" title="Отправить">➤</button>
             <input id="photoInput" type="file" accept="image/jpeg,image/png,image/webp,image/gif" hidden>
@@ -158,6 +185,10 @@
       <section class="notification-card">
         <div><strong>Уведомления</strong><p id="notificationStatus" class="hint">Проверяем поддержку…</p></div>
         <button id="notificationBtn" class="secondary" type="button">Включить</button>
+      </section>
+      <section class="profile-stickers-section">
+        <div class="profile-section-head"><div><strong>Мои стикерпаки</strong><p class="hint">Создавай собственные наборы прямо в профиле</p></div><button id="newStickerPackBtn" class="secondary" type="button">＋ Создать</button></div>
+        <div id="myStickerPacks" class="my-sticker-packs"><div class="empty-small">Пока нет своих наборов</div></div>
       </section>
       <p class="ios-note">На iPhone: открой сайт в Safari → «Поделиться» → «На экран Домой», затем открой PinkSasha с иконки и нажми «Включить».</p>
       <button id="saveProfileBtn" class="primary full" type="button">Сохранить профиль</button>
@@ -245,6 +276,8 @@
 
   <dialog id="messageMenuDialog" class="dialog small-dialog">
     <div class="dialog-card"><h3>Сообщение</h3>
+      <button id="replyMessageBtn" class="secondary full" type="button">↩ Ответить</button>
+      <button id="pinMessageBtn" class="secondary full" type="button">📌 Закрепить</button>
       <button id="editMessageBtn" class="secondary full" type="button">✏️ Редактировать</button>
       <button id="deleteMessageBtn" class="danger full" type="button">🗑️ Удалить</button>
       <button id="closeMessageMenuBtn" class="ghost full" type="button">Закрыть</button></div>
@@ -256,6 +289,57 @@
       <button id="saveEditedMessageBtn" class="primary full" type="button">Сохранить</button>
       <button id="cancelEditMessageBtn" class="ghost full" type="button">Отмена</button></div>
   </dialog>
+
+  <dialog id="stickerPackDialog" class="dialog">
+    <div class="dialog-card sticker-create-card">
+      <div class="dialog-head"><div><div class="eyebrow">Новый набор</div><h3>Создать стикерпак</h3></div><button id="closeStickerPackBtn" class="icon-btn" type="button">✕</button></div>
+      <label class="field"><span>Название</span><input id="stickerPackTitle" maxlength="40" placeholder="Например: Наша любовь"></label>
+      <button id="chooseStickersBtn" class="secondary full" type="button">🖼 Выбрать стикеры</button>
+      <input id="stickerFilesInput" type="file" accept="image/png,image/webp,image/jpeg" multiple hidden>
+      <p class="hint">До 30 картинок за раз. Лучше PNG или WEBP с прозрачным фоном.</p>
+      <div id="stickerCreatePreview" class="sticker-create-preview"></div>
+      <p id="stickerUploadStatus" class="status"></p>
+      <button id="createStickerPackBtn" class="primary full" type="button">Создать набор</button>
+    </div>
+  </dialog>
+
+  <dialog id="calendarDialog" class="dialog calendar-dialog">
+    <div class="calendar-shell">
+      <header class="calendar-head">
+        <button id="calendarCloseBtn" class="icon-btn" type="button">←</button>
+        <div><div class="eyebrow">Общий календарь</div><h3 id="calendarTitle">Календарь</h3></div>
+        <div class="calendar-nav"><button id="calendarPrevBtn" class="icon-btn" type="button">‹</button><button id="calendarTodayBtn" class="secondary" type="button">Сегодня</button><button id="calendarNextBtn" class="icon-btn" type="button">›</button></div>
+      </header>
+      <div class="calendar-layout">
+        <section class="calendar-main"><div class="calendar-weekdays"><span>Пн</span><span>Вт</span><span>Ср</span><span>Чт</span><span>Пт</span><span>Сб</span><span>Вс</span></div><div id="calendarGrid" class="calendar-grid"></div></section>
+        <aside class="calendar-details">
+          <h4 id="selectedCalendarDate">Выбери дату</h4>
+          <div id="calendarEvents" class="calendar-events"></div>
+          <form id="calendarEventForm" class="calendar-event-form">
+            <label class="field"><span>Что будет</span><input id="calendarEventTitle" maxlength="120" placeholder="Например: важная встреча"></label>
+            <label class="field"><span>Описание</span><textarea id="calendarEventNote" rows="3" maxlength="1000" placeholder="Подробности"></textarea></label>
+            <label class="field"><span>Цвет</span><select id="calendarEventLevel"><option value="red">🔴 Важное</option><option value="blue">🔵 Среднее</option><option value="green">🟢 Не забыть</option></select></label>
+            <button class="primary full" type="submit">Добавить событие</button>
+          </form>
+        </aside>
+      </div>
+    </div>
+  </dialog>
+
+  <dialog id="chatGalleryDialog" class="dialog gallery-dialog">
+    <div class="dialog-card gallery-card">
+      <div class="dialog-head"><div><div class="eyebrow">Медиа чата</div><h3 id="galleryTitle">Фотографии</h3></div><button id="closeGalleryBtn" class="icon-btn" type="button">✕</button></div>
+      <div id="chatGalleryGrid" class="chat-gallery-grid"><div class="empty-small">Загрузка…</div></div>
+    </div>
+  </dialog>
+
+  <div id="videoCaptureOverlay" class="video-capture-overlay hidden">
+    <div class="video-capture-card">
+      <video id="videoCapturePreview" autoplay muted playsinline></video>
+      <div class="video-record-status"><span class="recording-pulse"></span><b>Видеосообщение</b><span id="videoRecordingTimer">00:00</span></div>
+      <div class="video-record-actions"><button id="cancelVideoRecordingBtn" class="ghost" type="button">Отмена</button><button id="stopVideoRecordingBtn" class="primary" type="button">Отправить</button></div>
+    </div>
+  </div>
 
   <dialog id="imageDialog" class="image-dialog">
     <button id="closeImageDialogBtn" class="image-close" type="button">✕</button>
