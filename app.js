@@ -1650,6 +1650,6 @@
     visualViewport.addEventListener("resize", syncViewport, { passive: true });
     visualViewport.addEventListener("scroll", syncViewport, { passive: true });
   }
-  if ("serviceWorker" in navigator) window.addEventListener("load", () => navigator.serviceWorker.register("./sw.js").catch(console.warn));
+  if ("serviceWorker" in navigator) window.addEventListener("load", () => navigator.serviceWorker.register("./sw.js?v=8.1.1",{updateViaCache:"none"}).then(r=>r.update()).catch(console.warn));
   boot();
 })();
