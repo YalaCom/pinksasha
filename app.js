@@ -9,7 +9,6 @@
 
   const EMOJIS = ["😀","😂","🥰","😍","😘","😊","😉","😭","🥺","😎","🤔","😡","❤️","💗","💕","💖","✨","🔥","👍","🙏","🎉","🌸","💅","🫶"];
   const HEART_PATTERN = /(?:❤️|🩷|💗|💖|💕|💞|💘|💝|💓|💟|♥️|♥|<3)/u;
-  const RAIN_HEARTS = ["❤️","🩷","💗","💖","💕","💞"];
 
   const state = {
     mode: "login",
@@ -41,6 +40,7 @@
     chatActivity: null,
     typingTimer: null,
     typingLastSent: 0,
+    recordingActivityTimer: null,
     recorder: null,
     mediaStream: null,
     recordingChunks: [],
@@ -95,6 +95,10 @@
     .replaceAll(">", "&gt;")
     .replaceAll('"', "&quot;")
     .replaceAll("'", "&#039;");
+
+  function svg(name, className = "") {
+    return `<svg${className ? ` class="${className}"` : ""} aria-hidden="true"><use href="#i-${name}"></use></svg>`;
+  }
 
   function fmt(value) {
     return value ? new Intl.DateTimeFormat("ru", { hour: "2-digit", minute: "2-digit" }).format(new Date(value)) : "";
@@ -190,6 +194,7 @@
 
   function showAuth() {
     clearInterval(state.pollTimer);
+    clearInterval(state.recordingActivityTimer);
     state.user = null;
     state.activeConversation = null;
     e.appScreen.classList.add("hidden");
@@ -212,8 +217,12 @@
     await refreshAll();
     await updateNotificationUI();
     try {
-      const beat = await api("heartbeat", { token: state.token });
+      const beat = await api("heartbeat", { token: state.token, conversation_id: state.activeConversation?.id || undefined });
       handleSpecialEvents(beat.events);
+      if (Object.prototype.hasOwnProperty.call(beat, "activity")) {
+        state.chatActivity = beat.activity || null;
+        updateChatHead();
+      }
     } catch {}
     clearInterval(state.pollTimer);
     state.pollTimer = setInterval(async () => {
@@ -221,9 +230,13 @@
         const [, , beat] = await Promise.all([
           loadConversations(),
           loadStories(),
-          api("heartbeat", { token: state.token }),
+          api("heartbeat", { token: state.token, conversation_id: state.activeConversation?.id || undefined }),
         ]);
         handleSpecialEvents(beat.events);
+        if (Object.prototype.hasOwnProperty.call(beat, "activity")) {
+          state.chatActivity = beat.activity || null;
+          updateChatHead();
+        }
         if (state.activeConversation) await loadMessages(false);
       } catch (error) {
         console.warn(error);
@@ -247,9 +260,9 @@
     if (!message) return "Начните переписку";
     if (message.deleted_at) return "Сообщение удалено";
     if (message.kind === "sticker") return "Стикер";
-    if (message.kind === "voice") return "🎙 Голосовое сообщение";
-    if (message.kind === "video") return "◉ Видеосообщение";
-    if (message.kind === "image" || message.image_url) return message.body ? `📷 ${message.body}` : "📷 Фотография";
+    if (message.kind === "voice") return "Голосовое сообщение";
+    if (message.kind === "video") return "Видеосообщение";
+    if (message.kind === "image" || message.image_url) return message.body || "Фотография";
     return message.body || "Новое сообщение";
   }
 
@@ -310,6 +323,33 @@
     if (e.chatSubtitle.textContent !== subtitle) e.chatSubtitle.textContent = subtitle;
     e.chatTitle.parentElement.classList.toggle("activity", Boolean(activeText));
     setAvatar(e.chatAvatar, user);
+    updateContactPanel(user, activeText || subtitle);
+  }
+
+  function updateContactPanel(user, statusText = "") {
+    if (!e.contactPanel || !e.contactContent) return;
+    const empty = e.contactPanel.querySelector(".contact-empty");
+    if (!user) {
+      e.contactContent.classList.add("hidden");
+      empty?.classList.remove("hidden");
+      return;
+    }
+    empty?.classList.add("hidden");
+    e.contactContent.classList.remove("hidden");
+    setAvatar(e.contactPanelAvatar, user);
+    e.contactPanelName.textContent = user.username || "Пользователь";
+    e.contactPanelStatus.textContent = statusText || (online(user) ? "в сети" : "не в сети");
+    e.contactPanelStatus.classList.toggle("online", Boolean(activityText(state.chatActivity?.activity) || online(user)));
+    e.contactPanelBio.textContent = user.bio?.trim() || "Информация не указана";
+    renderContactMedia();
+  }
+
+  function renderContactMedia() {
+    if (!e.contactMediaPreview) return;
+    const photos = state.messages.filter((message) => !message.deleted_at && (message.image_url || message._local_image)).slice(-6).reverse();
+    e.contactMediaPreview.innerHTML = photos.length
+      ? photos.map((message) => `<button type="button" data-contact-image="${esc(message.image_url || message._local_image)}"><img src="${esc(message.image_url || message._local_image)}" alt=""></button>`).join("")
+      : '<div class="contact-media-empty">Фотографий пока нет</div>';
   }
 
   function renderConversations() {
@@ -319,6 +359,7 @@
           (conversation.other_user?.username || "").toLocaleLowerCase("ru").includes(query) ||
           conversationPreview(conversation.last_message).toLocaleLowerCase("ru").includes(query))
       : state.conversations;
+    if (e.chatCountLabel) e.chatCountLabel.textContent = state.conversations.length ? String(state.conversations.length) : "";
     if (!items.length) {
       e.conversationList.innerHTML = `<div class="empty-small">${query ? "Ничего не найдено" : "Чатов пока нет"}</div>`;
       return;
@@ -345,7 +386,7 @@
 
   function renderStories() {
     if (!state.stories.length) {
-      e.storyList.innerHTML = '<div class="story-empty">Пока нет историй — будь первым ✨</div>';
+      e.storyList.innerHTML = '<div class="story-empty">Пока нет опубликованных историй</div>';
       return;
     }
     e.storyList.innerHTML = state.stories.map((story, index) => `<button class="story-item${story.viewed_by_me || story.user_id === state.user.id ? " viewed" : ""}" type="button" data-story-index="${index}"><span class="story-ring"><span class="avatar">${avatarHTML(story.user)}</span></span><span class="story-name">${story.user_id === state.user.id ? "Моя" : esc(story.user.username)}</span></button>`).join("");
@@ -389,6 +430,7 @@
       state.messages = [];
       state.messagesLoadedFor = null;
       state.chatActivity = null;
+      state.typingLastSent = 0;
       clearReply();
     }
     state.activeConversation = conversation;
@@ -438,6 +480,7 @@
     state.messages = next;
     state.messagesLoadedFor = conversationId;
     if (changed) renderMessages(scroll || wasPinned);
+    renderContactMedia();
     if (heart) rainHearts();
     loadConversations().catch(console.warn);
   }
@@ -472,7 +515,7 @@
 
   function renderMessages(scroll = true) {
     if (!state.messages.length) {
-      e.messageList.innerHTML = '<div class="empty-small">Напиши первое сообщение 💗</div>';
+      e.messageList.innerHTML = '<div class="empty-small">Начните переписку</div>';
       if (scroll) scrollToBottom(true);
       return;
     }
@@ -485,10 +528,17 @@
         ? `<button class="message-reply" type="button" data-jump-message="${message.reply.id}"><b>${esc(replyLabel(message.reply))}</b><span>${esc(message.reply.body || "Сообщение")}</span></button>`
         : "";
       const menu = !deleted && !message._pending
-        ? `<button class="message-menu-button${mine ? "" : " incoming"}" type="button" data-message-menu="${message.id}" aria-label="Меню сообщения">⋯</button>`
+        ? `<button class="message-menu-button${mine ? "" : " incoming"}" type="button" data-message-menu="${message.id}" aria-label="Меню сообщения">${svg("more")}</button>`
         : "";
-      const status = message._failed ? "!" : message._pending ? "◷" : message.read_at ? "✓✓" : "✓";
-      const read = mine && !deleted ? `<span class="read-mark">${status}</span>` : "";
+      const read = mine && !deleted
+        ? message._failed
+          ? `<span class="read-mark failed-mark">${svg("alert")}</span>`
+          : message._pending
+            ? '<span class="read-mark"><span class="sending-spinner"></span></span>'
+            : message.read_at
+              ? `<span class="read-mark double">${svg("check")}${svg("check")}</span>`
+              : `<span class="read-mark">${svg("check")}</span>`
+        : "";
       const extra = message._failed ? " failed" : message._pending ? " pending" : "";
       const kindClass = deleted ? "" : message.kind === "sticker" ? " sticker-bubble" : message.kind === "voice" ? " voice-bubble" : message.kind === "video" ? " video-bubble" : "";
       const imageClass = (message.image_url || message._local_image) ? " has-image" : "";
@@ -507,12 +557,12 @@
 
   function rainHearts() {
     e.heartRain.replaceChildren();
-    for (let index = 0; index < 34; index++) {
+    for (let index = 0; index < 30; index++) {
       const heart = document.createElement("span");
       heart.className = "heart-drop";
-      heart.textContent = RAIN_HEARTS[Math.floor(Math.random() * RAIN_HEARTS.length)];
+      heart.innerHTML = svg("heart");
       heart.style.setProperty("--x", `${Math.random() * 100}vw`);
-      heart.style.setProperty("--size", `${16 + Math.random() * 24}px`);
+      heart.style.setProperty("--size", `${15 + Math.random() * 23}px`);
       heart.style.setProperty("--delay", `${Math.random() * .55}s`);
       heart.style.setProperty("--duration", `${1.9 + Math.random() * .8}s`);
       heart.style.setProperty("--drift", `${-90 + Math.random() * 180}px`);
@@ -697,11 +747,11 @@
     const subscription = await registration.pushManager.getSubscription();
     if (subscription && Notification.permission === "granted") {
       e.notificationStatus.textContent = "Включены";
-      e.notificationBtn.textContent = "Включены ✓";
+      e.notificationBtn.innerHTML = `${svg("check")}Включены`;
       e.notificationBtn.disabled = true;
     } else {
       e.notificationStatus.textContent = Notification.permission === "denied" ? "Запрещены в настройках" : "Выключены";
-      e.notificationBtn.textContent = "Включить";
+      e.notificationBtn.innerHTML = `${svg("bell")}Включить`;
       e.notificationBtn.disabled = Notification.permission === "denied";
     }
   }
@@ -716,7 +766,7 @@
     if (!subscription) subscription = await registration.pushManager.subscribe({ userVisibleOnly: true, applicationServerKey: b64ToU8(cfg.vapidPublicKey) });
     await api("save_push_subscription", { token: state.token, subscription: subscription.toJSON(), user_agent: navigator.userAgent });
     await updateNotificationUI();
-    toast("Уведомления включены 🔔");
+    toast("Уведомления включены");
   }
 
   function openStory(index) {
@@ -730,7 +780,7 @@
     e.storyViewerCaption.textContent = story.caption || "";
     e.deleteStoryBtn.classList.toggle("hidden", story.user_id !== state.user.id);
     e.storyViewsBtn.classList.toggle("hidden", story.user_id !== state.user.id);
-    e.storyViewsBtn.textContent = `👁 ${story.views_count || 0}`;
+    e.storyViewsBtn.innerHTML = `${svg("eye")} ${story.views_count || 0}`;
     e.storyViewerDialog.showModal();
     api("view_story", { token: state.token, story_id: story.id }).then(loadStories).catch(console.warn);
     clearTimeout(state.storyTimer);
@@ -759,10 +809,10 @@
     if (!data) return;
     e.adminStats.innerHTML = `<div class="admin-stat"><b>${data.stats.users}</b><span>пользователей</span></div><div class="admin-stat"><b>${data.stats.chats}</b><span>чатов</span></div><div class="admin-stat"><b>${data.stats.messages}</b><span>сообщений</span></div>`;
     e.adminUserList.innerHTML = data.users.length
-      ? data.users.map((user) => `<div class="admin-row"><div class="avatar">${avatarHTML(user)}</div><div class="admin-row-main"><div class="admin-row-title">${esc(user.username)}${user.role === "admin" ? '<span class="admin-role">admin</span>' : ""}</div><div class="admin-row-meta">Создан ${new Date(user.created_at).toLocaleDateString("ru")}</div></div>${user.id !== state.user.id ? `<div class="admin-row-actions"><button class="admin-love" type="button" data-admin-love-user="${user.id}">💗 Любовь</button><button class="admin-delete" type="button" data-admin-delete-user="${user.id}">Удалить</button></div>` : '<span class="admin-self">это вы</span>'}</div>`).join("")
+      ? data.users.map((user) => `<div class="admin-row"><div class="avatar">${avatarHTML(user)}</div><div class="admin-row-main"><div class="admin-row-title">${esc(user.username)}${user.role === "admin" ? '<span class="admin-role">admin</span>' : ""}</div><div class="admin-row-meta">Создан ${new Date(user.created_at).toLocaleDateString("ru")}</div></div>${user.id !== state.user.id ? `<div class="admin-row-actions"><button class="admin-love" type="button" data-admin-love-user="${user.id}">${svg("heart")}Любовь</button><button class="admin-delete" type="button" data-admin-delete-user="${user.id}">Удалить</button></div>` : '<span class="admin-self">это вы</span>'}</div>`).join("")
       : '<div class="empty-small">Нет пользователей</div>';
     e.adminChatList.innerHTML = data.chats.length
-      ? data.chats.map((chat) => `<div class="admin-row"><div class="admin-row-main"><div class="admin-row-title">${esc(chat.participants.join(" ↔ ") || "Чат без участников")}</div><div class="admin-row-meta">${chat.message_count} сообщений · ${new Date(chat.created_at).toLocaleDateString("ru")}</div></div><button class="admin-delete" type="button" data-admin-delete-chat="${chat.id}">Удалить чат</button></div>`).join("")
+      ? data.chats.map((chat) => `<div class="admin-row"><div class="admin-row-main"><div class="admin-row-title">${esc(chat.participants.join(" — ") || "Чат без участников")}</div><div class="admin-row-meta">${chat.message_count} сообщений · ${new Date(chat.created_at).toLocaleDateString("ru")}</div></div><button class="admin-delete" type="button" data-admin-delete-chat="${chat.id}">Удалить чат</button></div>`).join("")
       : '<div class="empty-small">Нет чатов</div>';
   }
 
@@ -792,11 +842,11 @@
       return;
     }
     const now = Date.now();
-    if (now - state.typingLastSent > 1700) {
+    if (now - state.typingLastSent > 900) {
       state.typingLastSent = now;
       announceActivity("typing");
     }
-    state.typingTimer = setTimeout(() => announceActivity(""), 2600);
+    state.typingTimer = setTimeout(() => announceActivity(""), 3400);
   }
 
   function bestMime(kind) {
@@ -849,6 +899,10 @@
       }
       e.attachmentPanel.classList.add("hidden");
       const limit = kind === "voice" ? 120 : 30;
+      clearInterval(state.recordingActivityTimer);
+      state.recordingActivityTimer = setInterval(() => {
+        if (state.recordingKind) announceActivity(state.recordingKind === "voice" ? "recording_voice" : "recording_video");
+      }, 2800);
       state.recordingInterval = setInterval(() => {
         const seconds = recordingTime();
         e.recordingTimer.textContent = formatDuration(seconds);
@@ -881,7 +935,9 @@
     const simpleType = rawType.split(";")[0];
     const blob = new Blob(state.recordingChunks, { type: simpleType });
     clearInterval(state.recordingInterval);
+    clearInterval(state.recordingActivityTimer);
     state.recordingInterval = null;
+    state.recordingActivityTimer = null;
     state.recorder = null;
     state.recordingChunks = [];
     state.recordingKind = "";
@@ -966,7 +1022,7 @@
     e.selectedCalendarDate.textContent = new Intl.DateTimeFormat("ru", { day: "numeric", month: "long", year: "numeric" }).format(date);
     const events = state.calendarEvents.filter((event) => event.event_date === selected);
     e.calendarEvents.innerHTML = events.length
-      ? events.map((event) => `<div class="calendar-event-card ${event.level}"><b>${esc(event.title)}</b>${event.note ? `<span>${esc(event.note)}</span>` : ""}<span>${event.creator?.username ? `Добавил(а): ${esc(event.creator.username)}` : ""}</span><button class="calendar-event-delete" type="button" data-delete-calendar-event="${event.id}">✕</button></div>`).join("")
+      ? events.map((event) => `<div class="calendar-event-card ${event.level}"><b>${esc(event.title)}</b>${event.note ? `<span>${esc(event.note)}</span>` : ""}<span>${event.creator?.username ? `Добавил(а): ${esc(event.creator.username)}` : ""}</span><button class="calendar-event-delete" type="button" data-delete-calendar-event="${event.id}" aria-label="Удалить">${svg("trash")}</button></div>`).join("")
       : '<div class="empty-small">На этот день ничего не запланировано</div>';
   }
 
@@ -1002,7 +1058,8 @@
     const editable = mine && ["text", "image"].includes(message.kind || (message.image_url ? "image" : "text"));
     e.editMessageBtn.classList.toggle("hidden", !editable);
     e.deleteMessageBtn.classList.toggle("hidden", !mine);
-    e.pinMessageBtn.textContent = state.pinnedMessage?.id === message.id ? "📌 Открепить" : "📌 Закрепить";
+    const pinLabel = e.pinMessageBtn.querySelector("span");
+    if (pinLabel) pinLabel.textContent = state.pinnedMessage?.id === message.id ? "Открепить" : "Закрепить";
     e.messageMenuDialog.showModal();
   }
 
@@ -1049,7 +1106,7 @@
       loveButton.disabled = true;
       try {
         await api("admin_send_love", { token: state.token, target_user_id: user.id });
-        toast(`Любовь отправлена пользователю ${user.username} 💗`);
+        toast(`Сообщение отправлено пользователю ${user.username}`);
       } catch (error) { toast(error.message); }
       finally { loveButton.disabled = false; }
       return;
@@ -1071,7 +1128,7 @@
     const button = event.target.closest("[data-admin-delete-chat]");
     if (!button) return;
     const chat = state.adminData?.chats.find((item) => item.id === button.dataset.adminDeleteChat);
-    if (!chat || !confirm(`Удалить чат «${chat.participants.join(" ↔ ") || "без участников"}» и все сообщения?`)) return;
+    if (!chat || !confirm(`Удалить чат «${chat.participants.join(" — ") || "без участников"}» и все сообщения?`)) return;
     button.disabled = true;
     try {
       await api("admin_delete_chat", { token: state.token, conversation_id: chat.id });
@@ -1150,7 +1207,7 @@
       }
       await loadStickerPacks();
       e.stickerPackDialog.close();
-      toast("Стикерпак создан 🔥");
+      toast("Стикерпак создан");
     } catch (error) { toast(error.message); }
     finally { e.createStickerPackBtn.disabled = false; e.stickerUploadStatus.textContent = ""; }
   };
@@ -1190,6 +1247,23 @@
     if (button) openConversation(button.dataset.conversationId).catch((error) => toast(error.message));
   };
   e.chatSearch.oninput = renderConversations;
+  e.railChatsBtn.onclick = () => { e.appScreen.classList.remove("chat-open"); history.replaceState(null, "", location.pathname); };
+  e.railStoriesBtn.onclick = () => e.storyList?.scrollIntoView({ behavior: "smooth", block: "center" });
+  e.railNewChatBtn.onclick = () => e.newChatBtn.click();
+  e.railCalendarBtn.onclick = () => state.activeConversation ? e.calendarBtn.click() : toast("Сначала откройте чат");
+  e.emptyNewChatBtn.onclick = () => e.newChatBtn.click();
+  e.chatGalleryBtn.onclick = () => openGallery();
+  e.contactGalleryBtn.onclick = () => openGallery();
+  e.contactAllMediaBtn.onclick = () => openGallery();
+  e.contactCalendarBtn.onclick = () => e.calendarBtn.click();
+  e.contactWallpaperBtn.onclick = () => e.chatSettingsBtn.click();
+  e.contactPinnedBtn.onclick = () => { if (state.pinnedMessage) jumpToMessage(state.pinnedMessage.id); else toast("В чате нет закреплённого сообщения"); };
+  e.contactMediaPreview.onclick = (event) => {
+    const button = event.target.closest("[data-contact-image]");
+    if (!button) return;
+    e.imageDialogPhoto.src = button.dataset.contactImage;
+    e.imageDialog.showModal();
+  };
   e.backBtn.onclick = () => {
     e.appScreen.classList.remove("chat-open");
     history.replaceState(null, "", location.pathname);
@@ -1519,7 +1593,7 @@
       await api("create_story", { token: state.token, image_data_url: state.selectedStoryData, caption: e.storyCaption.value.trim() });
       e.storyCreateDialog.close();
       await loadStories();
-      toast("История опубликована ✨");
+      toast("История опубликована");
     } catch (error) { toast(error.message); }
     finally { e.publishStoryBtn.disabled = false; }
   };

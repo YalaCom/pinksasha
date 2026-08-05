@@ -3,8 +3,8 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-  <meta name="theme-color" content="#ff4fa3">
-  <meta name="description" content="PinkSasha — уютный мессенджер">
+  <meta name="theme-color" content="#d95fa5">
+  <meta name="description" content="PinkSasha — современный личный мессенджер">
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="default">
   <meta name="apple-mobile-web-app-title" content="PinkSasha">
@@ -14,35 +14,77 @@
   <link rel="stylesheet" href="./styles.css">
 </head>
 <body>
+  <svg class="svg-sprite" aria-hidden="true" width="0" height="0">
+    <symbol id="i-logo" viewBox="0 0 24 24"><path d="M12 21s-7.5-4.6-9.5-9.1C.4 7.8 2.7 3.5 7.1 3.5c2 0 3.7 1 4.9 2.7 1.2-1.7 2.9-2.7 4.9-2.7 4.4 0 6.7 4.3 4.6 8.4C19.5 16.4 12 21 12 21Z"/><path d="m8 9 3.2 3.2L9.4 14l4.6 4.6"/></symbol>
+    <symbol id="i-chat" viewBox="0 0 24 24"><path d="M4 5.5A3.5 3.5 0 0 1 7.5 2h9A3.5 3.5 0 0 1 20 5.5v7a3.5 3.5 0 0 1-3.5 3.5H10l-5.5 4v-4.7A3.5 3.5 0 0 1 4 12.5v-7Z"/></symbol>
+    <symbol id="i-phone" viewBox="0 0 24 24"><path d="M8.2 3.7 10 7.5 7.8 9.2c1.2 2.8 3.2 4.8 6 6l1.7-2.2 3.8 1.8-.5 4c-.2 1.2-1.3 2.1-2.5 2C8.8 19.7 4.3 15.2 3.2 7.7 3 6.5 3.9 5.4 5.1 5.2l3.1-.5Z"/></symbol>
+    <symbol id="i-video" viewBox="0 0 24 24"><rect x="3" y="5" width="13" height="14" rx="3"/><path d="m16 10 5-3v10l-5-3"/></symbol>
+    <symbol id="i-users" viewBox="0 0 24 24"><path d="M16 20v-1.5a4.5 4.5 0 0 0-4.5-4.5h-4A4.5 4.5 0 0 0 3 18.5V20"/><circle cx="9.5" cy="7" r="4"/><path d="M17 4.2a4 4 0 0 1 0 7.6M21 20v-1.5a4.5 4.5 0 0 0-3.4-4.4"/></symbol>
+    <symbol id="i-story" viewBox="0 0 24 24"><circle cx="12" cy="12" r="8"/><path d="M12 2v2M12 20v2M2 12h2M20 12h2"/></symbol>
+    <symbol id="i-calendar" viewBox="0 0 24 24"><rect x="3" y="5" width="18" height="16" rx="3"/><path d="M7 3v4M17 3v4M3 10h18"/></symbol>
+    <symbol id="i-settings" viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.7 1.7 0 0 0 .3 1.9l.1.1-2.8 2.8-.1-.1a1.7 1.7 0 0 0-1.9-.3 1.7 1.7 0 0 0-1 1.6v.2h-4V21a1.7 1.7 0 0 0-1-1.6 1.7 1.7 0 0 0-1.9.3l-.1.1L4.2 17l.1-.1a1.7 1.7 0 0 0 .3-1.9A1.7 1.7 0 0 0 3 14H2.8v-4H3a1.7 1.7 0 0 0 1.6-1 1.7 1.7 0 0 0-.3-1.9L4.2 7 7 4.2l.1.1A1.7 1.7 0 0 0 9 4.6a1.7 1.7 0 0 0 1-1.6v-.2h4V3a1.7 1.7 0 0 0 1 1.6 1.7 1.7 0 0 0 1.9-.3l.1-.1L19.8 7l-.1.1a1.7 1.7 0 0 0-.3 1.9 1.7 1.7 0 0 0 1.6 1h.2v4H21a1.7 1.7 0 0 0-1.6 1Z"/></symbol>
+    <symbol id="i-shield" viewBox="0 0 24 24"><path d="M12 3 20 6v5c0 5-3.4 8.4-8 10-4.6-1.6-8-5-8-10V6l8-3Z"/><path d="m9 12 2 2 4-4"/></symbol>
+    <symbol id="i-logout" viewBox="0 0 24 24"><path d="M10 4H5a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h5M14 8l4 4-4 4M8 12h10"/></symbol>
+    <symbol id="i-search" viewBox="0 0 24 24"><circle cx="11" cy="11" r="7"/><path d="m20 20-4-4"/></symbol>
+    <symbol id="i-plus" viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></symbol>
+    <symbol id="i-refresh" viewBox="0 0 24 24"><path d="M20 7v5h-5M4 17v-5h5"/><path d="M6.1 8.2A7 7 0 0 1 18.4 7M17.9 15.8A7 7 0 0 1 5.6 17"/></symbol>
+    <symbol id="i-back" viewBox="0 0 24 24"><path d="m15 18-6-6 6-6"/></symbol>
+    <symbol id="i-image" viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="16" rx="3"/><circle cx="9" cy="9" r="2"/><path d="m5 18 5-5 3 3 2-2 4 4"/></symbol>
+    <symbol id="i-palette" viewBox="0 0 24 24"><path d="M12 3a9 9 0 1 0 0 18h1.2a1.8 1.8 0 0 0 1.2-3.1l-.4-.4a1.8 1.8 0 0 1 1.2-3.1H17a4 4 0 0 0 4-4C21 6.3 17 3 12 3Z"/><circle cx="7.5" cy="10" r="1"/><circle cx="10" cy="6.8" r="1"/><circle cx="14" cy="6.8" r="1"/></symbol>
+    <symbol id="i-more" viewBox="0 0 24 24"><circle cx="5" cy="12" r="1.5"/><circle cx="12" cy="12" r="1.5"/><circle cx="19" cy="12" r="1.5"/></symbol>
+    <symbol id="i-pin" viewBox="0 0 24 24"><path d="m8 3 8 0-1 6 3 3H6l3-3-1-6ZM12 12v9"/></symbol>
+    <symbol id="i-close" viewBox="0 0 24 24"><path d="m6 6 12 12M18 6 6 18"/></symbol>
+    <symbol id="i-paperclip" viewBox="0 0 24 24"><path d="m8 12 6.5-6.5a3.5 3.5 0 0 1 5 5L11 19a5 5 0 0 1-7-7l8-8"/></symbol>
+    <symbol id="i-smile" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M8 14s1.5 2 4 2 4-2 4-2M9 9h.01M15 9h.01"/></symbol>
+    <symbol id="i-sticker" viewBox="0 0 24 24"><path d="M5 3h10a4 4 0 0 1 4 4v8l-6 6H7a4 4 0 0 1-4-4V5a2 2 0 0 1 2-2Z"/><path d="M13 21v-4a2 2 0 0 1 2-2h4"/></symbol>
+    <symbol id="i-send" viewBox="0 0 24 24"><path d="m3 11 18-8-8 18-2-8-8-2Z"/><path d="m11 13 5-5"/></symbol>
+    <symbol id="i-mic" viewBox="0 0 24 24"><rect x="8" y="3" width="8" height="13" rx="4"/><path d="M5 11a7 7 0 0 0 14 0M12 18v3M9 21h6"/></symbol>
+    <symbol id="i-camera" viewBox="0 0 24 24"><path d="M4 7h3l1.5-2h7L17 7h3a2 2 0 0 1 2 2v9a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V9a2 2 0 0 1 2-2Z"/><circle cx="12" cy="13" r="4"/></symbol>
+    <symbol id="i-reply" viewBox="0 0 24 24"><path d="m10 8-6 5 6 5v-3c5 0 8 1 10 4-1-6-4-9-10-9V8Z"/></symbol>
+    <symbol id="i-edit" viewBox="0 0 24 24"><path d="M4 20h4l11-11-4-4L4 16v4ZM13.5 6.5l4 4"/></symbol>
+    <symbol id="i-trash" viewBox="0 0 24 24"><path d="M4 7h16M9 7V4h6v3M7 7l1 14h8l1-14M10 11v6M14 11v6"/></symbol>
+    <symbol id="i-bell" viewBox="0 0 24 24"><path d="M18 9a6 6 0 0 0-12 0c0 7-3 7-3 9h18c0-2-3-2-3-9ZM10 21h4"/></symbol>
+    <symbol id="i-upload" viewBox="0 0 24 24"><path d="M12 16V4M7 9l5-5 5 5M5 20h14"/></symbol>
+    <symbol id="i-eye" viewBox="0 0 24 24"><path d="M2 12s3.5-6 10-6 10 6 10 6-3.5 6-10 6S2 12 2 12Z"/><circle cx="12" cy="12" r="3"/></symbol>
+    <symbol id="i-chevron-left" viewBox="0 0 24 24"><path d="m15 18-6-6 6-6"/></symbol>
+    <symbol id="i-chevron-right" viewBox="0 0 24 24"><path d="m9 18 6-6-6-6"/></symbol>
+    <symbol id="i-down" viewBox="0 0 24 24"><path d="m6 9 6 6 6-6"/></symbol>
+    <symbol id="i-heart" viewBox="0 0 24 24"><path d="M12 21s-8-4.8-9.5-9.4C1 7.5 3.3 4 7.2 4c2.1 0 3.8 1.1 4.8 2.8C13 5.1 14.7 4 16.8 4c3.9 0 6.2 3.5 4.7 7.6C20 16.2 12 21 12 21Z"/></symbol>
+    <symbol id="i-lock" viewBox="0 0 24 24"><rect x="4" y="10" width="16" height="11" rx="3"/><path d="M8 10V7a4 4 0 0 1 8 0v3"/></symbol>
+    <symbol id="i-check" viewBox="0 0 24 24"><path d="m5 12 4 4L19 6"/></symbol>
+    <symbol id="i-alert" viewBox="0 0 24 24"><path d="M12 3 2.5 20h19L12 3Z"/><path d="M12 9v5M12 17h.01"/></symbol>
+    <symbol id="i-clock" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></symbol>
+  </svg>
+
   <div id="toast" class="toast" role="status" aria-live="polite"></div>
   <div id="heartRain" class="heart-rain" aria-hidden="true"></div>
-
   <div id="loveOverlay" class="love-overlay hidden" aria-live="assertive">
     <div class="love-card">
-      <div class="love-big-heart">💗</div>
+      <span class="love-symbol"><svg><use href="#i-heart"></use></svg></span>
       <h2 id="loveMessage">Я тебя люблю &lt;3</h2>
       <p id="loveSender"></p>
     </div>
   </div>
 
-
   <main class="page">
     <section id="authScreen" class="auth-shell">
-      <div class="auth-card">
-        <div class="brand-mark">💗</div>
+      <div class="auth-visual">
+        <span class="auth-logo"><svg><use href="#i-logo"></use></svg></span>
         <h1>PinkSasha</h1>
-        <p class="muted center">Твой уютный мессенджер</p>
+        <p>Личное пространство для общения без лишнего шума.</p>
+        <div class="auth-feature"><svg><use href="#i-lock"></use></svg><span>Ваши чаты доступны только участникам</span></div>
+      </div>
+      <div class="auth-card">
+        <div class="auth-card-brand"><span><svg><use href="#i-logo"></use></svg></span><strong>PinkSasha</strong></div>
+        <h2>Добро пожаловать</h2>
+        <p class="muted">Войдите в свой аккаунт или создайте новый.</p>
         <div class="tabs">
           <button id="loginTab" class="tab active" type="button">Войти</button>
           <button id="registerTab" class="tab" type="button">Регистрация</button>
         </div>
         <form id="authForm" novalidate>
-          <label class="field"><span>Имя</span>
-            <input id="authUsername" minlength="3" maxlength="30" autocomplete="username" placeholder="Например: Саша" required>
-          </label>
-          <label class="field"><span>Пароль</span>
-            <input id="authPassword" type="password" minlength="6" maxlength="100" autocomplete="current-password" placeholder="Минимум 6 символов" required>
-          </label>
+          <label class="field"><span>Имя пользователя</span><input id="authUsername" minlength="3" maxlength="30" autocomplete="username" placeholder="Введите имя" required></label>
+          <label class="field"><span>Пароль</span><input id="authPassword" type="password" minlength="6" maxlength="100" autocomplete="current-password" placeholder="Минимум 6 символов" required></label>
           <button id="authSubmit" class="primary large" type="submit">Войти</button>
         </form>
         <p id="authStatus" class="status" aria-live="polite"></p>
@@ -50,301 +92,132 @@
     </section>
 
     <section id="appScreen" class="app-shell hidden">
+      <nav class="nav-rail" aria-label="Основная навигация">
+        <div class="rail-brand" title="PinkSasha"><svg><use href="#i-logo"></use></svg></div>
+        <div class="rail-main">
+          <button id="railChatsBtn" class="rail-btn active" type="button" title="Чаты"><svg><use href="#i-chat"></use></svg><span>Чаты</span></button>
+          <button id="railStoriesBtn" class="rail-btn" type="button" title="Истории"><svg><use href="#i-story"></use></svg><span>Истории</span></button>
+          <button id="railNewChatBtn" class="rail-btn" type="button" title="Контакты"><svg><use href="#i-users"></use></svg><span>Контакты</span></button>
+          <button id="railCalendarBtn" class="rail-btn" type="button" title="Календарь"><svg><use href="#i-calendar"></use></svg><span>Календарь</span></button>
+          <button id="adminBtn" class="rail-btn hidden" type="button" title="Админ-панель"><svg><use href="#i-shield"></use></svg><span>Админ</span></button>
+        </div>
+        <div class="rail-bottom">
+          <button id="profileBtn" class="rail-profile" type="button" title="Профиль"><span id="currentAvatar" class="avatar avatar-small">P</span><span id="currentUsername">Профиль</span></button>
+          <button id="logoutBtn" class="rail-btn" type="button" title="Выйти"><svg><use href="#i-logout"></use></svg><span>Выйти</span></button>
+        </div>
+      </nav>
+
       <aside class="sidebar">
         <header class="sidebar-header">
-          <button id="profileBtn" class="profile-summary" type="button" title="Редактировать профиль">
-            <span id="currentAvatar" class="avatar avatar-small">P</span>
-            <span class="profile-summary-text">
-              <span class="eyebrow">PinkSasha</span>
-              <strong id="currentUsername">Пользователь</strong>
-            </span>
-          </button>
+          <div><span class="section-kicker">PinkSasha</span><h2>Чаты</h2></div>
           <div class="header-actions">
-            <button id="adminBtn" class="icon-btn hidden" type="button" title="Админ-панель">🛡</button>
-            <button id="logoutBtn" class="icon-btn" type="button" title="Выйти">↪</button>
+            <button id="refreshBtn" class="icon-btn" type="button" title="Обновить"><svg><use href="#i-refresh"></use></svg></button>
+            <button id="newChatBtn" class="icon-btn accent" type="button" title="Новый чат"><svg><use href="#i-plus"></use></svg></button>
           </div>
         </header>
 
-        <label class="sidebar-search" aria-label="Поиск по чатам">
-          <span>⌕</span>
-          <input id="chatSearch" type="search" placeholder="Поиск" autocomplete="off">
-        </label>
+        <label class="sidebar-search" aria-label="Поиск по чатам"><svg><use href="#i-search"></use></svg><input id="chatSearch" type="search" placeholder="Поиск по чатам" autocomplete="off"></label>
 
         <section class="stories-section">
-          <div class="stories-head">
-            <span class="section-title compact">Истории</span>
-            <button id="addStoryBtn" class="story-add-link" type="button">＋ Добавить</button>
-          </div>
+          <div class="stories-head"><span class="section-title compact">Истории</span><button id="addStoryBtn" class="text-btn" type="button"><svg><use href="#i-plus"></use></svg>Добавить</button></div>
           <div id="storyList" class="story-list"></div>
         </section>
 
-        <div class="sidebar-actions">
-          <button id="newChatBtn" class="primary" type="button">＋ Новый чат</button>
-          <button id="refreshBtn" class="secondary refresh-compact" type="button" title="Обновить">↻</button>
-        </div>
-
-        <div class="section-title">Мои чаты</div>
-        <div id="conversationList" class="conversation-list">
-          <div class="empty-small">Чатов пока нет</div>
-        </div>
+        <div class="list-heading"><span>Сообщения</span><span id="chatCountLabel"></span></div>
+        <div id="conversationList" class="conversation-list"><div class="empty-small">Чатов пока нет</div></div>
       </aside>
 
       <section class="chat-panel">
         <div id="emptyChat" class="empty-chat">
-          <div class="empty-heart">💗</div>
-          <h2>Выбери чат</h2>
-          <p>Или создай новый чат с другим пользователем.</p>
+          <span class="empty-chat-icon"><svg><use href="#i-chat"></use></svg></span>
+          <h2>Выберите диалог</h2>
+          <p>Начните новый разговор или откройте существующий чат.</p>
+          <button id="emptyNewChatBtn" class="primary" type="button"><svg><use href="#i-plus"></use></svg>Новый чат</button>
         </div>
 
         <div id="activeChat" class="active-chat hidden">
           <header class="chat-header">
-            <button id="backBtn" class="icon-btn mobile-only" type="button">←</button>
-            <button class="avatar avatar-button" id="chatAvatar" type="button" title="Фото из чата">P</button>
-            <div class="chat-person">
-              <h3 id="chatTitle">Чат</h3>
-              <p id="chatSubtitle">личная переписка</p>
+            <button id="backBtn" class="icon-btn mobile-only" type="button" aria-label="Назад"><svg><use href="#i-back"></use></svg></button>
+            <button class="avatar avatar-button" id="chatAvatar" type="button" title="Профиль и медиа">P</button>
+            <div class="chat-person"><h3 id="chatTitle">Чат</h3><p id="chatSubtitle">личная переписка</p></div>
+            <div class="chat-header-actions">
+              <button id="chatGalleryBtn" class="icon-btn" type="button" title="Медиа чата"><svg><use href="#i-image"></use></svg></button>
+              <button id="calendarBtn" class="icon-btn" type="button" title="Общий календарь"><svg><use href="#i-calendar"></use></svg></button>
+              <button id="chatSettingsBtn" class="icon-btn" type="button" title="Оформление чата"><svg><use href="#i-palette"></use></svg></button>
             </div>
-            <div class="chat-header-actions"><button id="calendarBtn" class="icon-btn" type="button" title="Общий календарь">🗓</button><button id="chatSettingsBtn" class="icon-btn chat-settings-btn" type="button" title="Фон чата">⚙</button></div>
           </header>
-          <button id="pinnedBanner" class="pinned-banner hidden" type="button">
-            <span>📌</span><span class="pinned-copy"><b>Закреплённое сообщение</b><small id="pinnedText"></small></span>
-            <span id="unpinBtn" class="pinned-close" role="button" aria-label="Открепить">✕</span>
-          </button>
+
+          <button id="pinnedBanner" class="pinned-banner hidden" type="button"><svg><use href="#i-pin"></use></svg><span class="pinned-copy"><b>Закреплённое сообщение</b><small id="pinnedText"></small></span><span id="unpinBtn" class="pinned-close" role="button" aria-label="Открепить"><svg><use href="#i-close"></use></svg></span></button>
           <div id="messageList" class="messages"></div>
-          <button id="scrollBottomBtn" class="scroll-bottom-btn hidden" type="button" aria-label="Вниз">↓</button>
+          <button id="scrollBottomBtn" class="scroll-bottom-btn hidden" type="button" aria-label="Вниз"><svg><use href="#i-down"></use></svg></button>
 
-          <div id="mediaPreview" class="media-preview hidden">
-            <img id="mediaPreviewImage" alt="Предпросмотр фотографии">
-            <div class="media-preview-info"><strong>Фотография готова</strong><span>Можно добавить подпись и отправить</span></div>
-            <button id="removeMediaBtn" class="icon-btn" type="button" title="Убрать фото">✕</button>
-          </div>
-
-          <div id="replyPreview" class="reply-preview hidden">
-            <span class="reply-line"></span><div><b id="replyName">Ответ</b><span id="replyText"></span></div>
-            <button id="cancelReplyBtn" class="reply-close" type="button">✕</button>
-          </div>
+          <div id="mediaPreview" class="media-preview hidden"><img id="mediaPreviewImage" alt="Предпросмотр фотографии"><div class="media-preview-info"><strong>Фотография готова</strong><span>Добавьте подпись или отправьте сразу</span></div><button id="removeMediaBtn" class="icon-btn" type="button" title="Убрать фото"><svg><use href="#i-close"></use></svg></button></div>
+          <div id="replyPreview" class="reply-preview hidden"><span class="reply-line"></span><div><b id="replyName">Ответ</b><span id="replyText"></span></div><button id="cancelReplyBtn" class="reply-close" type="button" aria-label="Отменить ответ"><svg><use href="#i-close"></use></svg></button></div>
 
           <div id="attachmentPanel" class="attachment-panel hidden">
-            <button id="photoBtn" type="button"><span>📷</span><b>Фото</b></button>
-            <button id="voiceBtn" type="button"><span>🎙</span><b>Голос</b></button>
-            <button id="videoBtn" type="button"><span>◉</span><b>Кружок</b></button>
+            <button id="photoBtn" type="button"><svg><use href="#i-image"></use></svg><b>Фотография</b></button>
+            <button id="voiceBtn" type="button"><svg><use href="#i-mic"></use></svg><b>Голосовое</b></button>
+            <button id="videoBtn" type="button"><svg><use href="#i-video"></use></svg><b>Видеокружок</b></button>
           </div>
-
           <div id="emojiPanel" class="emoji-panel hidden" aria-label="Эмодзи"></div>
-          <div id="stickerPanel" class="sticker-panel hidden">
-            <div id="stickerPackTabs" class="sticker-pack-tabs"></div>
-            <div id="stickerGrid" class="sticker-grid"><div class="empty-small">Загрузка стикеров…</div></div>
-          </div>
+          <div id="stickerPanel" class="sticker-panel hidden"><div id="stickerPackTabs" class="sticker-pack-tabs"></div><div id="stickerGrid" class="sticker-grid"><div class="empty-small">Загрузка стикеров…</div></div></div>
 
-          <div id="recordingBar" class="recording-bar hidden">
-            <span id="recordingPulse" class="recording-pulse"></span>
-            <div><b id="recordingLabel">Запись голоса</b><span id="recordingTimer">00:00</span></div>
-            <button id="cancelRecordingBtn" class="ghost" type="button">Отмена</button>
-            <button id="stopRecordingBtn" class="primary" type="button">Отправить</button>
-          </div>
+          <div id="recordingBar" class="recording-bar hidden"><span id="recordingPulse" class="recording-pulse"></span><div><b id="recordingLabel">Запись голоса</b><span id="recordingTimer">00:00</span></div><button id="cancelRecordingBtn" class="ghost" type="button">Отмена</button><button id="stopRecordingBtn" class="primary" type="button">Отправить</button></div>
 
           <form id="messageForm" class="composer">
-            <button id="attachBtn" class="composer-btn" type="button" title="Вложения">＋</button>
-            <button id="emojiBtn" class="composer-btn" type="button" title="Эмодзи">☺</button>
-            <button id="stickerBtn" class="composer-btn" type="button" title="Стикеры">▣</button>
-            <textarea id="messageInput" rows="1" maxlength="2000" placeholder="Сообщение…"></textarea>
-            <button class="send-btn" type="submit" title="Отправить">➤</button>
+            <button id="attachBtn" class="composer-btn" type="button" title="Вложения"><svg><use href="#i-paperclip"></use></svg></button>
+            <button id="emojiBtn" class="composer-btn" type="button" title="Эмодзи"><svg><use href="#i-smile"></use></svg></button>
+            <button id="stickerBtn" class="composer-btn" type="button" title="Стикеры"><svg><use href="#i-sticker"></use></svg></button>
+            <textarea id="messageInput" rows="1" maxlength="2000" placeholder="Напишите сообщение…"></textarea>
+            <button class="send-btn" type="submit" title="Отправить"><svg><use href="#i-send"></use></svg></button>
             <input id="photoInput" type="file" accept="image/jpeg,image/png,image/webp,image/gif" hidden>
           </form>
         </div>
       </section>
+
+      <aside id="contactPanel" class="contact-panel">
+        <div class="contact-empty"><span><svg><use href="#i-users"></use></svg></span><p>Информация о собеседнике появится после открытия чата.</p></div>
+        <div id="contactContent" class="contact-content hidden">
+          <div id="contactPanelAvatar" class="avatar contact-avatar">P</div>
+          <h3 id="contactPanelName">Пользователь</h3>
+          <p id="contactPanelStatus" class="contact-status">не в сети</p>
+          <div class="contact-quick-actions">
+            <button id="contactGalleryBtn" type="button"><svg><use href="#i-image"></use></svg><span>Медиа</span></button>
+            <button id="contactCalendarBtn" type="button"><svg><use href="#i-calendar"></use></svg><span>Календарь</span></button>
+            <button id="contactWallpaperBtn" type="button"><svg><use href="#i-palette"></use></svg><span>Фон</span></button>
+          </div>
+          <section class="contact-card"><span class="contact-card-label">О себе</span><p id="contactPanelBio">Информация не указана</p></section>
+          <section class="contact-card"><div class="contact-card-head"><span class="contact-card-label">Медиа чата</span><button id="contactAllMediaBtn" class="text-btn" type="button">Показать все</button></div><div id="contactMediaPreview" class="contact-media-preview"><div class="contact-media-empty">Фотографий пока нет</div></div></section>
+          <section class="contact-card compact-card"><button id="contactPinnedBtn" class="contact-row" type="button"><svg><use href="#i-pin"></use></svg><span>Закреплённое сообщение</span><svg class="chevron"><use href="#i-chevron-right"></use></svg></button></section>
+        </div>
+      </aside>
     </section>
   </main>
 
-  <dialog id="newChatDialog" class="dialog">
-    <form method="dialog" class="dialog-card">
-      <div class="dialog-head"><div><div class="eyebrow">Новый чат</div><h3>Выбери пользователя</h3></div>
-        <button class="icon-btn" value="cancel" type="submit">✕</button></div>
-      <input id="userSearch" class="search" placeholder="Поиск по имени">
-      <div id="userList" class="user-list"></div>
-    </form>
-  </dialog>
+  <dialog id="newChatDialog" class="dialog"><form method="dialog" class="dialog-card"><div class="dialog-head"><div><span class="section-kicker">Контакты</span><h3>Новый чат</h3></div><button class="icon-btn" value="cancel" type="submit" aria-label="Закрыть"><svg><use href="#i-close"></use></svg></button></div><label class="dialog-search"><svg><use href="#i-search"></use></svg><input id="userSearch" class="search" placeholder="Поиск по имени"></label><div id="userList" class="user-list"></div></form></dialog>
 
-  <dialog id="profileDialog" class="dialog">
-    <div class="dialog-card profile-dialog-card">
-      <div class="dialog-head"><div><div class="eyebrow">Мой профиль</div><h3>Настройки</h3></div>
-        <button id="closeProfileBtn" class="icon-btn" type="button">✕</button></div>
-      <div class="profile-avatar-editor">
-        <div id="profileAvatarPreview" class="avatar avatar-large">P</div>
-        <div><button id="chooseAvatarBtn" class="secondary" type="button">Выбрать аватарку</button>
-          <p class="hint">JPG, PNG или WEBP</p><input id="avatarInput" type="file" accept="image/jpeg,image/png,image/webp" hidden></div>
-      </div>
-      <label class="field"><span>Имя</span><input id="profileUsername" minlength="3" maxlength="30"></label>
-      <label class="field"><span>О себе</span><textarea id="profileBio" rows="3" maxlength="160" placeholder="Напиши пару слов о себе"></textarea></label>
-      <label class="field"><span>Тема приложения</span>
-        <select id="profileTheme">
-          <option value="pink">Розовая</option><option value="purple">Фиолетовая</option>
-          <option value="peach">Персиковая</option><option value="dark">Тёмная</option>
-        </select>
-      </label>
-      <section class="notification-card">
-        <div><strong>Уведомления</strong><p id="notificationStatus" class="hint">Проверяем поддержку…</p></div>
-        <button id="notificationBtn" class="secondary" type="button">Включить</button>
-      </section>
-      <section class="profile-stickers-section">
-        <div class="profile-section-head"><div><strong>Мои стикерпаки</strong><p class="hint">Создавай собственные наборы прямо в профиле</p></div><button id="newStickerPackBtn" class="secondary" type="button">＋ Создать</button></div>
-        <div id="myStickerPacks" class="my-sticker-packs"><div class="empty-small">Пока нет своих наборов</div></div>
-      </section>
-      <p class="ios-note">На iPhone: открой сайт в Safari → «Поделиться» → «На экран Домой», затем открой PinkSasha с иконки и нажми «Включить».</p>
-      <button id="saveProfileBtn" class="primary full" type="button">Сохранить профиль</button>
-    </div>
-  </dialog>
+  <dialog id="profileDialog" class="dialog"><div class="dialog-card profile-dialog-card"><div class="dialog-head"><div><span class="section-kicker">Аккаунт</span><h3>Профиль и настройки</h3></div><button id="closeProfileBtn" class="icon-btn" type="button"><svg><use href="#i-close"></use></svg></button></div><div class="profile-grid"><section class="profile-main"><div class="profile-avatar-editor"><div id="profileAvatarPreview" class="avatar avatar-large">P</div><div><button id="chooseAvatarBtn" class="secondary" type="button"><svg><use href="#i-upload"></use></svg>Выбрать фотографию</button><p class="hint">JPG, PNG или WEBP</p><input id="avatarInput" type="file" accept="image/jpeg,image/png,image/webp" hidden></div></div><label class="field"><span>Имя</span><input id="profileUsername" minlength="3" maxlength="30"></label><label class="field"><span>О себе</span><textarea id="profileBio" rows="3" maxlength="160" placeholder="Коротко расскажите о себе"></textarea></label><label class="field"><span>Тема интерфейса</span><select id="profileTheme"><option value="pink">Розовая</option><option value="purple">Фиолетовая</option><option value="peach">Тёплая</option><option value="dark">Тёмная</option></select></label><section class="notification-card"><div><strong>Уведомления</strong><p id="notificationStatus" class="hint">Проверяем поддержку…</p></div><button id="notificationBtn" class="secondary" type="button"><svg><use href="#i-bell"></use></svg>Включить</button></section><button id="saveProfileBtn" class="primary full" type="button">Сохранить профиль</button></section><section class="profile-stickers-section"><div class="profile-section-head"><div><strong>Мои стикерпаки</strong><p class="hint">Создавайте собственные наборы</p></div><button id="newStickerPackBtn" class="secondary" type="button"><svg><use href="#i-plus"></use></svg>Создать</button></div><div id="myStickerPacks" class="my-sticker-packs"><div class="empty-small">Пока нет своих наборов</div></div><div class="ios-note"><svg><use href="#i-phone"></use></svg><p>На iPhone откройте сайт в Safari, добавьте его на экран «Домой», затем включите уведомления в профиле.</p></div></section></div></div></dialog>
 
-  <dialog id="storyCreateDialog" class="dialog">
-    <div class="dialog-card">
-      <div class="dialog-head"><div><div class="eyebrow">Новая история</div><h3>На 24 часа</h3></div>
-        <button id="closeStoryCreateBtn" class="icon-btn" type="button">✕</button></div>
-      <button id="chooseStoryPhotoBtn" class="story-photo-picker" type="button">
-        <img id="storyCreatePreview" class="hidden" alt="Предпросмотр истории">
-        <span id="storyCreatePlaceholder">📸<b>Выбрать фотографию</b></span>
-      </button>
-      <input id="storyPhotoInput" type="file" accept="image/jpeg,image/png,image/webp" hidden>
-      <label class="field"><span>Подпись</span><textarea id="storyCaption" rows="2" maxlength="160" placeholder="Что происходит?"></textarea></label>
-      <button id="publishStoryBtn" class="primary full" type="button">Опубликовать историю</button>
-    </div>
-  </dialog>
+  <dialog id="storyCreateDialog" class="dialog"><div class="dialog-card"><div class="dialog-head"><div><span class="section-kicker">Истории</span><h3>Новая история</h3></div><button id="closeStoryCreateBtn" class="icon-btn" type="button"><svg><use href="#i-close"></use></svg></button></div><p class="muted">История будет доступна 24 часа.</p><button id="chooseStoryPhotoBtn" class="story-photo-picker" type="button"><img id="storyCreatePreview" class="hidden" alt="Предпросмотр истории"><span id="storyCreatePlaceholder"><svg><use href="#i-image"></use></svg><b>Выбрать фотографию</b><small>JPG, PNG или WEBP</small></span></button><input id="storyPhotoInput" type="file" accept="image/jpeg,image/png,image/webp" hidden><label class="field"><span>Подпись</span><textarea id="storyCaption" rows="2" maxlength="160" placeholder="Добавьте подпись"></textarea></label><button id="publishStoryBtn" class="primary full" type="button">Опубликовать</button></div></dialog>
 
-  <dialog id="storyViewerDialog" class="story-viewer-dialog">
-    <div class="story-viewer">
-      <div class="story-progress"><span id="storyProgressBar"></span></div>
-      <header class="story-viewer-head">
-        <div id="storyViewerAvatar" class="avatar avatar-small">P</div>
-        <div><strong id="storyViewerName">История</strong><span id="storyViewerTime"></span></div>
-        <button id="deleteStoryBtn" class="story-head-btn hidden" type="button">Удалить</button>
-        <button id="closeStoryViewerBtn" class="story-head-btn" type="button">✕</button>
-      </header>
-      <button id="storyPrevBtn" class="story-nav prev" type="button" aria-label="Предыдущая история"></button>
-      <img id="storyViewerImage" alt="История">
-      <button id="storyNextBtn" class="story-nav next" type="button" aria-label="Следующая история"></button>
-      <div class="story-caption-wrap"><p id="storyViewerCaption"></p><button id="storyViewsBtn" class="story-views hidden" type="button"></button></div>
-    </div>
-  </dialog>
+  <dialog id="storyViewerDialog" class="story-viewer-dialog"><div class="story-viewer"><div class="story-progress"><span id="storyProgressBar"></span></div><header class="story-viewer-head"><div id="storyViewerAvatar" class="avatar avatar-small">P</div><div><strong id="storyViewerName">История</strong><span id="storyViewerTime"></span></div><button id="deleteStoryBtn" class="story-head-btn hidden" type="button">Удалить</button><button id="closeStoryViewerBtn" class="story-head-btn" type="button"><svg><use href="#i-close"></use></svg></button></header><button id="storyPrevBtn" class="story-nav prev" type="button" aria-label="Предыдущая история"><svg><use href="#i-chevron-left"></use></svg></button><img id="storyViewerImage" alt="История"><button id="storyNextBtn" class="story-nav next" type="button" aria-label="Следующая история"><svg><use href="#i-chevron-right"></use></svg></button><div class="story-caption-wrap"><p id="storyViewerCaption"></p><button id="storyViewsBtn" class="story-views hidden" type="button"></button></div></div></dialog>
+  <dialog id="storyViewersDialog" class="dialog small-dialog"><div class="dialog-card"><div class="dialog-head"><h3>Просмотры</h3><button id="closeStoryViewersBtn" class="icon-btn" type="button"><svg><use href="#i-close"></use></svg></button></div><div id="storyViewersList" class="user-list"></div></div></dialog>
 
-  <dialog id="storyViewersDialog" class="dialog small-dialog">
-    <div class="dialog-card"><div class="dialog-head"><h3>Кто посмотрел</h3><button id="closeStoryViewersBtn" class="icon-btn" type="button">✕</button></div>
-      <div id="storyViewersList" class="user-list"></div></div>
-  </dialog>
+  <dialog id="chatBackgroundDialog" class="dialog"><div class="dialog-card wallpaper-dialog-card"><div class="dialog-head"><div><span class="section-kicker">Оформление</span><h3>Фон переписки</h3></div><button id="closeChatBackgroundBtn" class="icon-btn" type="button"><svg><use href="#i-close"></use></svg></button></div><p class="wallpaper-help">Выбранный фон будет одинаковым у обоих участников.</p><div id="wallpaperGrid" class="wallpaper-grid"><button class="wallpaper-option wallpaper-rose" type="button" data-wallpaper="rose"><span></span><b>Розовый</b></button><button class="wallpaper-option wallpaper-paper" type="button" data-wallpaper="paper"><span></span><b>Светлый</b></button><button class="wallpaper-option wallpaper-lavender" type="button" data-wallpaper="lavender"><span></span><b>Лаванда</b></button><button class="wallpaper-option wallpaper-midnight" type="button" data-wallpaper="midnight"><span></span><b>Ночной</b></button><button class="wallpaper-option wallpaper-hearts" type="button" data-wallpaper="hearts"><span></span><b>Узор</b></button></div><button id="chooseChatWallpaperBtn" class="secondary full wallpaper-upload" type="button"><svg><use href="#i-upload"></use></svg>Выбрать фото из галереи</button><input id="chatWallpaperInput" type="file" accept="image/jpeg,image/png,image/webp" hidden><p id="wallpaperStatus" class="hint center"></p></div></dialog>
 
+  <dialog id="adminDialog" class="dialog admin-dialog"><div class="dialog-card admin-dialog-card"><div class="dialog-head"><div><span class="section-kicker">Управление</span><h3>Админ-панель</h3></div><button id="closeAdminBtn" class="icon-btn" type="button"><svg><use href="#i-close"></use></svg></button></div><div class="admin-topbar"><p class="admin-warning">Удаление выполняется без корзины и отмены.</p><button id="adminRefreshBtn" class="secondary" type="button"><svg><use href="#i-refresh"></use></svg>Обновить</button></div><div id="adminStats" class="admin-stats"></div><div class="admin-columns"><section class="admin-section"><div class="section-row"><h4>Пользователи</h4><span>Управление аккаунтами</span></div><div id="adminUserList" class="admin-list"></div></section><section class="admin-section"><div class="section-row"><h4>Чаты</h4><span>Диалоги и сообщения</span></div><div id="adminChatList" class="admin-list"></div></section></div></div></dialog>
 
+  <dialog id="messageMenuDialog" class="dialog small-dialog"><div class="dialog-card action-sheet"><div class="dialog-head"><h3>Действия с сообщением</h3><button id="closeMessageMenuBtn" class="icon-btn" type="button"><svg><use href="#i-close"></use></svg></button></div><button id="replyMessageBtn" class="action-row" type="button"><svg><use href="#i-reply"></use></svg><span>Ответить</span></button><button id="pinMessageBtn" class="action-row" type="button"><svg><use href="#i-pin"></use></svg><span>Закрепить</span></button><button id="editMessageBtn" class="action-row" type="button"><svg><use href="#i-edit"></use></svg><span>Редактировать</span></button><button id="deleteMessageBtn" class="action-row danger-row" type="button"><svg><use href="#i-trash"></use></svg><span>Удалить</span></button></div></dialog>
+  <dialog id="editMessageDialog" class="dialog small-dialog"><div class="dialog-card"><div class="dialog-head"><h3>Редактировать сообщение</h3><button id="cancelEditMessageBtn" class="icon-btn" type="button"><svg><use href="#i-close"></use></svg></button></div><textarea id="editMessageInput" class="dialog-textarea" rows="4" maxlength="2000"></textarea><button id="saveEditedMessageBtn" class="primary full" type="button">Сохранить</button></div></dialog>
 
-  <dialog id="chatBackgroundDialog" class="dialog">
-    <div class="dialog-card wallpaper-dialog-card">
-      <div class="dialog-head">
-        <div><div class="eyebrow">Оформление чата</div><h3>Фон переписки</h3></div>
-        <button id="closeChatBackgroundBtn" class="icon-btn" type="button">✕</button>
-      </div>
-      <p class="wallpaper-help">Выбранный фон будет одинаковым у обоих участников чата.</p>
-      <div id="wallpaperGrid" class="wallpaper-grid">
-        <button class="wallpaper-option wallpaper-rose" type="button" data-wallpaper="rose"><span></span><b>Розовый</b></button>
-        <button class="wallpaper-option wallpaper-paper" type="button" data-wallpaper="paper"><span></span><b>Светлый</b></button>
-        <button class="wallpaper-option wallpaper-lavender" type="button" data-wallpaper="lavender"><span></span><b>Лаванда</b></button>
-        <button class="wallpaper-option wallpaper-midnight" type="button" data-wallpaper="midnight"><span></span><b>Ночной</b></button>
-        <button class="wallpaper-option wallpaper-hearts" type="button" data-wallpaper="hearts"><span></span><b>Сердечки</b></button>
-      </div>
-      <button id="chooseChatWallpaperBtn" class="secondary full wallpaper-upload" type="button">🖼 Выбрать фото из галереи</button>
-      <input id="chatWallpaperInput" type="file" accept="image/jpeg,image/png,image/webp" hidden>
-      <p id="wallpaperStatus" class="hint center"></p>
-    </div>
-  </dialog>
+  <dialog id="stickerPackDialog" class="dialog"><div class="dialog-card sticker-create-card"><div class="dialog-head"><div><span class="section-kicker">Стикеры</span><h3>Новый стикерпак</h3></div><button id="closeStickerPackBtn" class="icon-btn" type="button"><svg><use href="#i-close"></use></svg></button></div><label class="field"><span>Название</span><input id="stickerPackTitle" maxlength="40" placeholder="Название набора"></label><button id="chooseStickersBtn" class="secondary full" type="button"><svg><use href="#i-upload"></use></svg>Выбрать стикеры</button><input id="stickerFilesInput" type="file" accept="image/png,image/webp,image/jpeg" multiple hidden><p class="hint">До 30 изображений. Лучше PNG или WEBP с прозрачным фоном.</p><div id="stickerCreatePreview" class="sticker-create-preview"></div><p id="stickerUploadStatus" class="status"></p><button id="createStickerPackBtn" class="primary full" type="button">Создать набор</button></div></dialog>
 
-  <dialog id="adminDialog" class="dialog admin-dialog">
-    <div class="dialog-card admin-dialog-card">
-      <div class="dialog-head">
-        <div><div class="eyebrow">PinkSasha Admin</div><h3>Админ-панель</h3></div>
-        <button id="closeAdminBtn" class="icon-btn" type="button">✕</button>
-      </div>
-      <p class="admin-warning">Удаление выполняется навсегда из приложения, базы и хранилища. Корзины нет.</p>
-      <div id="adminStats" class="admin-stats"></div>
-      <div class="admin-toolbar">
-        <button id="adminRefreshBtn" class="secondary" type="button">Обновить</button>
-      </div>
-      <section class="admin-section">
-        <h4>Пользователи</h4>
-        <div id="adminUserList" class="admin-list"></div>
-      </section>
-      <section class="admin-section">
-        <h4>Чаты</h4>
-        <div id="adminChatList" class="admin-list"></div>
-      </section>
-    </div>
-  </dialog>
+  <dialog id="calendarDialog" class="dialog calendar-dialog"><div class="calendar-shell"><header class="calendar-head"><button id="calendarCloseBtn" class="icon-btn" type="button"><svg><use href="#i-back"></use></svg></button><div><span class="section-kicker">Общий календарь</span><h3 id="calendarTitle">Календарь</h3></div><div class="calendar-nav"><button id="calendarPrevBtn" class="icon-btn" type="button"><svg><use href="#i-chevron-left"></use></svg></button><button id="calendarTodayBtn" class="secondary" type="button">Сегодня</button><button id="calendarNextBtn" class="icon-btn" type="button"><svg><use href="#i-chevron-right"></use></svg></button></div></header><div class="calendar-layout"><section class="calendar-main"><div class="calendar-weekdays"><span>Пн</span><span>Вт</span><span>Ср</span><span>Чт</span><span>Пт</span><span>Сб</span><span>Вс</span></div><div id="calendarGrid" class="calendar-grid"></div></section><aside class="calendar-details"><h4 id="selectedCalendarDate">Выберите дату</h4><div id="calendarEvents" class="calendar-events"></div><form id="calendarEventForm" class="calendar-event-form"><label class="field"><span>Название события</span><input id="calendarEventTitle" maxlength="120" placeholder="Что произойдёт"></label><label class="field"><span>Описание</span><textarea id="calendarEventNote" rows="3" maxlength="1000" placeholder="Добавьте подробности"></textarea></label><label class="field"><span>Приоритет</span><select id="calendarEventLevel"><option value="red">Важное</option><option value="blue">Среднее</option><option value="green">Не забыть</option></select></label><button class="primary full" type="submit">Добавить событие</button></form></aside></div></div></dialog>
 
-  <dialog id="messageMenuDialog" class="dialog small-dialog">
-    <div class="dialog-card"><h3>Сообщение</h3>
-      <button id="replyMessageBtn" class="secondary full" type="button">↩ Ответить</button>
-      <button id="pinMessageBtn" class="secondary full" type="button">📌 Закрепить</button>
-      <button id="editMessageBtn" class="secondary full" type="button">✏️ Редактировать</button>
-      <button id="deleteMessageBtn" class="danger full" type="button">🗑️ Удалить</button>
-      <button id="closeMessageMenuBtn" class="ghost full" type="button">Закрыть</button></div>
-  </dialog>
+  <dialog id="chatGalleryDialog" class="dialog gallery-dialog"><div class="dialog-card gallery-card"><div class="dialog-head"><div><span class="section-kicker">Медиа чата</span><h3 id="galleryTitle">Фотографии</h3></div><button id="closeGalleryBtn" class="icon-btn" type="button"><svg><use href="#i-close"></use></svg></button></div><div id="chatGalleryGrid" class="chat-gallery-grid"><div class="empty-small">Загрузка…</div></div></div></dialog>
 
-  <dialog id="editMessageDialog" class="dialog small-dialog">
-    <div class="dialog-card"><h3>Редактировать сообщение</h3>
-      <textarea id="editMessageInput" class="dialog-textarea" rows="4" maxlength="2000"></textarea>
-      <button id="saveEditedMessageBtn" class="primary full" type="button">Сохранить</button>
-      <button id="cancelEditMessageBtn" class="ghost full" type="button">Отмена</button></div>
-  </dialog>
-
-  <dialog id="stickerPackDialog" class="dialog">
-    <div class="dialog-card sticker-create-card">
-      <div class="dialog-head"><div><div class="eyebrow">Новый набор</div><h3>Создать стикерпак</h3></div><button id="closeStickerPackBtn" class="icon-btn" type="button">✕</button></div>
-      <label class="field"><span>Название</span><input id="stickerPackTitle" maxlength="40" placeholder="Например: Наша любовь"></label>
-      <button id="chooseStickersBtn" class="secondary full" type="button">🖼 Выбрать стикеры</button>
-      <input id="stickerFilesInput" type="file" accept="image/png,image/webp,image/jpeg" multiple hidden>
-      <p class="hint">До 30 картинок за раз. Лучше PNG или WEBP с прозрачным фоном.</p>
-      <div id="stickerCreatePreview" class="sticker-create-preview"></div>
-      <p id="stickerUploadStatus" class="status"></p>
-      <button id="createStickerPackBtn" class="primary full" type="button">Создать набор</button>
-    </div>
-  </dialog>
-
-  <dialog id="calendarDialog" class="dialog calendar-dialog">
-    <div class="calendar-shell">
-      <header class="calendar-head">
-        <button id="calendarCloseBtn" class="icon-btn" type="button">←</button>
-        <div><div class="eyebrow">Общий календарь</div><h3 id="calendarTitle">Календарь</h3></div>
-        <div class="calendar-nav"><button id="calendarPrevBtn" class="icon-btn" type="button">‹</button><button id="calendarTodayBtn" class="secondary" type="button">Сегодня</button><button id="calendarNextBtn" class="icon-btn" type="button">›</button></div>
-      </header>
-      <div class="calendar-layout">
-        <section class="calendar-main"><div class="calendar-weekdays"><span>Пн</span><span>Вт</span><span>Ср</span><span>Чт</span><span>Пт</span><span>Сб</span><span>Вс</span></div><div id="calendarGrid" class="calendar-grid"></div></section>
-        <aside class="calendar-details">
-          <h4 id="selectedCalendarDate">Выбери дату</h4>
-          <div id="calendarEvents" class="calendar-events"></div>
-          <form id="calendarEventForm" class="calendar-event-form">
-            <label class="field"><span>Что будет</span><input id="calendarEventTitle" maxlength="120" placeholder="Например: важная встреча"></label>
-            <label class="field"><span>Описание</span><textarea id="calendarEventNote" rows="3" maxlength="1000" placeholder="Подробности"></textarea></label>
-            <label class="field"><span>Цвет</span><select id="calendarEventLevel"><option value="red">🔴 Важное</option><option value="blue">🔵 Среднее</option><option value="green">🟢 Не забыть</option></select></label>
-            <button class="primary full" type="submit">Добавить событие</button>
-          </form>
-        </aside>
-      </div>
-    </div>
-  </dialog>
-
-  <dialog id="chatGalleryDialog" class="dialog gallery-dialog">
-    <div class="dialog-card gallery-card">
-      <div class="dialog-head"><div><div class="eyebrow">Медиа чата</div><h3 id="galleryTitle">Фотографии</h3></div><button id="closeGalleryBtn" class="icon-btn" type="button">✕</button></div>
-      <div id="chatGalleryGrid" class="chat-gallery-grid"><div class="empty-small">Загрузка…</div></div>
-    </div>
-  </dialog>
-
-  <div id="videoCaptureOverlay" class="video-capture-overlay hidden">
-    <div class="video-capture-card">
-      <video id="videoCapturePreview" autoplay muted playsinline></video>
-      <div class="video-record-status"><span class="recording-pulse"></span><b>Видеосообщение</b><span id="videoRecordingTimer">00:00</span></div>
-      <div class="video-record-actions"><button id="cancelVideoRecordingBtn" class="ghost" type="button">Отмена</button><button id="stopVideoRecordingBtn" class="primary" type="button">Отправить</button></div>
-    </div>
-  </div>
-
-  <dialog id="imageDialog" class="image-dialog">
-    <button id="closeImageDialogBtn" class="image-close" type="button">✕</button>
-    <img id="imageDialogPhoto" alt="Фотография">
-  </dialog>
+  <div id="videoCaptureOverlay" class="video-capture-overlay hidden"><div class="video-capture-card"><video id="videoCapturePreview" autoplay muted playsinline></video><div class="video-record-status"><span class="recording-pulse"></span><b>Видеосообщение</b><span id="videoRecordingTimer">00:00</span></div><div class="video-record-actions"><button id="cancelVideoRecordingBtn" class="ghost" type="button">Отмена</button><button id="stopVideoRecordingBtn" class="primary" type="button">Отправить</button></div></div></div>
+  <dialog id="imageDialog" class="image-dialog"><button id="closeImageDialogBtn" class="image-close" type="button"><svg><use href="#i-close"></use></svg></button><img id="imageDialogPhoto" alt="Фотография"></dialog>
 
   <script src="./config.js"></script>
   <script src="./app.js"></script>
