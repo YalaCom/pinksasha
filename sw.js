@@ -1,10 +1,10 @@
-const CACHE="pinksasha-v8-1-hotfix";
+const CACHE="pinksasha-v8-2-responsive";
 const ASSETS=[
   "./",
   "./index.html",
-  "./styles.css?v=8.1.1",
-  "./config.js?v=8.1.1",
-  "./app.js?v=8.1.1",
+  "./styles.css?v=8.2.0",
+  "./config.js?v=8.2.0",
+  "./app.js?v=8.2.0",
   "./manifest.webmanifest",
   "./icon-192.png",
   "./icon-512.png",

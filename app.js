@@ -409,13 +409,28 @@
     });
   }
 
+  let viewportFrame = 0;
   function syncViewport() {
-    const viewport = window.visualViewport;
-    const height = viewport?.height || window.innerHeight;
-    const top = viewport?.offsetTop || 0;
-    document.documentElement.style.setProperty("--app-height", `${Math.round(height)}px`);
-    document.documentElement.style.setProperty("--viewport-top", `${Math.round(top)}px`);
-    if (document.activeElement === e.messageInput && state.activeConversation) setTimeout(() => scrollToBottom(true), 40);
+    cancelAnimationFrame(viewportFrame);
+    viewportFrame = requestAnimationFrame(() => {
+      const viewport = window.visualViewport;
+      const height = Math.max(1, viewport?.height || window.innerHeight);
+      const width = Math.max(1, viewport?.width || window.innerWidth);
+      const top = viewport?.offsetTop || 0;
+      const left = viewport?.offsetLeft || 0;
+      const keyboardOpen = width <= 900 && (window.innerHeight - height) > 120;
+
+      document.documentElement.style.setProperty("--app-height", `${Math.round(height)}px`);
+      document.documentElement.style.setProperty("--app-width", `${Math.round(width)}px`);
+      document.documentElement.style.setProperty("--viewport-top", `${Math.round(top)}px`);
+      document.documentElement.style.setProperty("--viewport-left", `${Math.round(left)}px`);
+      document.documentElement.classList.toggle("keyboard-open", keyboardOpen);
+
+      if (document.activeElement === e.messageInput && state.activeConversation) {
+        setTimeout(() => scrollToBottom(true), 30);
+        setTimeout(() => scrollToBottom(true), 180);
+      }
+    });
   }
 
   function autoGrowComposer() {
@@ -1646,10 +1661,16 @@
 
   syncViewport();
   window.addEventListener("resize", syncViewport, { passive: true });
+  window.addEventListener("orientationchange", () => {
+    setTimeout(syncViewport, 80);
+    setTimeout(() => {
+      if (state.activeConversation) scrollToBottom(true);
+    }, 260);
+  }, { passive: true });
   if (window.visualViewport) {
     visualViewport.addEventListener("resize", syncViewport, { passive: true });
     visualViewport.addEventListener("scroll", syncViewport, { passive: true });
   }
-  if ("serviceWorker" in navigator) window.addEventListener("load", () => navigator.serviceWorker.register("./sw.js?v=8.1.1",{updateViaCache:"none"}).then(r=>r.update()).catch(console.warn));
+  if ("serviceWorker" in navigator) window.addEventListener("load", () => navigator.serviceWorker.register("./sw.js?v=8.2.0",{updateViaCache:"none"}).then(r=>r.update()).catch(console.warn));
   boot();
 })();
